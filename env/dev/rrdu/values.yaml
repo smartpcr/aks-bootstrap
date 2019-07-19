@@ -1,0 +1,34 @@
+global:
+  owner: xd
+  envName: dev
+  spaceName: rrdu
+  productName: "azuredevspace"
+  productShortName: "azds"
+  subscriptionName: RRD MSDN Ultimate
+  subscriptionAlias: rrdu
+  resourceGroup: "azds-dev-rg"
+kv:
+  resourceGroup: "azds-dev-rg"
+acr:
+  email: lingxd@gmail.com
+  resourceGroup: "azds-dev-rg"
+aks:
+  aksDnsPrefix: hw-aks-xd
+  aksOwnerAadUpn: lingxd@gmail.com
+  purpose: devspace
+  clusterName: "rrdu-azds-k8s-dev"
+  resourceGroup: "azds-dev-rg"
+  vmSize: Standard_D4s_v3
+servicebus:
+  resourceGroup: "azds-dev-rg"
+terraform:
+  resourceGroup: "azds-dev-rg"
+appInsights:
+  resourceGroup: "azds-dev-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "azds-dev-rg"
+  graphDb:
+   resourceGroup: "azds-dev-rg"
+  mongoDb:
+   resourceGroup: "azds-dev-rg"

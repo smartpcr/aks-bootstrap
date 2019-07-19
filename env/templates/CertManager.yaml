@@ -1,0 +1,19 @@
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: management-{{.Values.dns.domain}}
+  namespace: kube-system
+spec:
+  secretName: management-{{.Values.dns.domain}}-tls
+  issuerRef:
+    name: letsencryptdns
+    kind: ClusterIssuer
+  dnsNames:
+    - '*.{{.Values.dns.domain}}'
+  acme:
+    config:
+      - dns01:
+          provider: dns
+        domains:
+         - '*.{{.Values.dns.domain}}'

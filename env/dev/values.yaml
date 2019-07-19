@@ -1,0 +1,19 @@
+global:
+  owner: xd
+  envName: dev
+  subscriptionName: Compliance_Tools_Eng
+  subscriptionAlias: onees
+acr:
+  email: xiaodoli@microsoft.com
+aks:
+  aksDnsPrefix: hw-aks-xd
+  aksOwnerAadUpn: xiaodoli.onmicrosoft.com
+  purpose: devspace
+  monitoring:
+    namespace: monitoring
+    charts:
+      installPrometheus: true
+  secrets:
+    addContainerRegistryAccess: true
+    addKeyVaultAccess: true
+    addAppInsightsKey: true

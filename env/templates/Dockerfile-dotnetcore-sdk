@@ -1,0 +1,27 @@
+FROM microsoft/dotnet:2.2-sdk-stretch
+
+RUN useradd -m dotnet && \
+    cd /usr/local/share/ca-certificates/ && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/microsoft-internal-ca.D17697.crt && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/msit-ca-z2.377667.crt && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/msit-ca-z2.37AB15.crt && \
+    update-ca-certificates && \
+    apt-get update && \
+    apt-get -y --no-install-recommends install gettext-base unzip && \
+    apt-get clean && \
+    curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg && \
+    cd /usr/local/lib/ && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/dotnet-pfxcert.zip && \
+    unzip dotnet-pfxcert.zip
+
+USER dotnet
+
+RUN dotnet new --help >/dev/null
+
+RUN cd /usr/local/lib/dotnet-pfxcert && \
+    dotnet dotnet-pfxcert.dll add "/usr/local/share/ca-certificates/microsoft-internal-ca.D17697.crt" --store "CurrentUser.Root" && \
+    dotnet dotnet-pfxcert.dll add "/usr/local/share/ca-certificates/msit-ca-z2.377667.crt" --store "CurrentUser.CertificateAuthority" && \
+    dotnet dotnet-pfxcert.dll add "/usr/local/share/ca-certificates/msit-ca-z2.37AB15.crt" --store "CurrentUser.CertificateAuthority" && \
+    dotnet tool install --global coverlet.console && \
+    dotnet tool install --global dotnet-reportgenerator-globaltool && \
+    echo 'export PATH="$PATH:/home/dotnet/.dotnet/tools"' >> ~/.bashrc

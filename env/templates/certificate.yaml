@@ -1,0 +1,15 @@
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: "example-com-tls"
+  namespace: default
+spec:
+  ca:
+    secretName: example-com-tls
+    issuerRef:
+      name: ca-issuer
+      kind: Issuer
+    commonName: example.com
+    dnsName:
+      - www.example.name

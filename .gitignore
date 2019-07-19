@@ -1,0 +1,9 @@
+.vs/
+obj/
+bin/
+log/
+.idea/
+out/
+.DS_Store
+.terraform/
+credential/

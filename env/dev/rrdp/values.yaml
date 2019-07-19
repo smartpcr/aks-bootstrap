@@ -1,0 +1,47 @@
+global:
+  owner: xd
+  envName: dev
+  spaceName: rrdp
+  productName: "space"
+  productShortName: "space"
+  subscriptionName: RRD MSDN Premium
+  subscriptionAlias: rrdp
+  resourceGroup: "azds-rg"
+  components:
+    cosmosdb:
+      docDb: true
+      mongoDb: false
+      graphDb: false
+kv:
+  name: xd-rrdp-kv
+  resourceGroup: "azds-rg"
+acr:
+  email: lingxd@gmail.com
+  resourceGroup: "azds-rg"
+aks:
+  aksDnsPrefix: xd
+  aksOwnerAadUpn: lingxd@gmail.com
+  purpose: devspace
+  resourceGroup: "azds-rg"
+  vmSize: Standard_D4s_v3
+  nodeCount: 2
+servicebus:
+  resourceGroup: "azds-rg"
+terraform:
+  resourceGroup: "azds-rg"
+appInsights:
+  resourceGroup: "azds-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "azds-rg"
+  graphDb:
+   resourceGroup: "azds-rg"
+  mongoDb:
+   resourceGroup: "azds-rg"
+dns:
+  resourceGroup: "azds-rg"
+  domain: "dev.xiaodong.cloud"
+trafficManager:
+  resourceGroup: "azds-rg"
+redis:
+  resourceGroup: "azds-rg"

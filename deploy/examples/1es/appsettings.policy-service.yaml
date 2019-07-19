@@ -1,0 +1,17 @@
+ProductCatalogApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'product-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-api' }).appId)"
+PolicyCatalogApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'policy-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'policy-catalog-api' }).appId)"
+PolicyServiceApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'policy-service' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'policy-service' }).appId)"
+SelfUrl: "https://$($({{.Values.services}}  | ? { $_.name -eq 'policy-service' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+WhiteListedApps:
+  Apps:
+    - AppName: PolicyCatalog
+      AppId: "$($({{.Values.services}} | ? { $_.name -eq 'policy-catalog-api' }).appId)"
+    - AppName: PolicyServiceIntTest
+      AppId: "54569c76-18e0-4a8a-b130-515ad09a2e12"
+EnableAadPodIdentity: {{.Values.aks.enableAadPodIdentity}}

@@ -1,0 +1,26 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: "{{.Values.service.name}}"
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: 'true'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'false'
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    certmanager.k8s.io/cluster-issuer: "cluster-issuer-{{.Values.global.envName}}"
+spec:
+  tls:
+  - hosts:
+    - "{{.Values.service.hostName}}"
+    secretName: "{{.Values.service.hostName}}-tls"
+  rules:
+  - host: "{{.Values.service.hostName}}"
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "{{.Values.service.name}}"
+          servicePort: 443

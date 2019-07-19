@@ -1,0 +1,369 @@
+sourceCodeRepoRoot: "c:/appcenter/1es"
+baseAppSettingsFile: "appsettings.json"
+acr:
+  name: "{{.Values.acr.name}}"
+nugetFeeds:
+  - name: AppCenterNuGet
+    url: https://msmobilecenter.pkgs.visualstudio.com/_packaging/AppCenterNuGet/nuget/v3/index.json
+    passwordFromEnvironment: AppCenterNuGet
+shares:
+  - name: kv-cert
+    hostPath: "{{.Values.homeFolder}}/.secrets"
+    containerPath: "/secrets/disk/keyvault-certificate"
+    localOnly: true
+externalServices:
+  - name: service-tree
+    endpoint: "https://servicetree.msftcloudes.com"
+    resourceId: "bee782c6-8654-4298-a692-90976578870d"
+  - name: vsts
+    endpoint: "https://dev.azure.com"
+    resourceId: "499b84ac-1321-427f-aa17-267ca6975798"
+  - name: redis
+    endpoint: "{{.Values.redis.name}}.redis.cache.windows.net:{{.Values.redis.port}}"
+  - name: kusto-vsosi
+    endpoint: "https://vsosi.kusto.windows.net"
+  - name: vssps
+    endpoint: "https://app.vssps.visualstudio.com"
+  - name: vsts-user
+    endpoint: "https://api.vstsusers.visualstudio.com"
+  - name: graph
+    endpoint: "https://graph.microsoft.com"
+    resourceId: "00000003-0000-0000-c000-000000000000"
+  - name: ez-start
+    resourceId: 6045aee8-bb4d-4e12-958b-2454cfb67bbc
+keyvault:
+  - name: "{{.Values.kv.name}}"
+    clientId: "{{.Values.kv.clientId}}"
+    clientCert: "{{.Values.kv.clientCertName}}"
+oAuthProvider:
+  - name: aad
+    tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+resources:
+  - name: api
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: job
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: web
+    requests:
+      memory: "250Mi"
+      cpu: "100m"
+    limits:
+      memory: "1000Mi"
+      cpu: "1500m"
+services:
+  - name: product-catalog-api
+    type: api
+    appId: "5b67725b-d1b3-47a0-b475-3fad45079e7a"
+    authRedirectPath: "/signin-oidc"
+    image:
+      name: "1es/product-catalog-api"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "product-catalog-api/src/product-catalog-api.csproj"
+    assemblyName: "product-catalog-api"
+    privateNugetFeed: AppCenterNuget
+    containerPort: 6001
+    sshPort: 51022
+    envFile: .env-shared
+    volumes:
+      - name: kv-cert
+    replicas: 2
+    isFrontEnd: true
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/status"
+    readinessCheck: "/status"
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - ado-org-api
+      - service-tree
+      - vsts
+      - redis
+
+  - name: product-catalog-sync-job
+    type: job
+    appId: "5b67725b-d1b3-47a0-b475-3fad45079e7a"
+    image:
+      name: "1es/product-catalog-sync-job"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "product-catalog-sync-job/src/product-catalog-sync-job.csproj"
+    assemblyName: "product-catalog-sync-job"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    volumes:
+      - name: kv-cert
+    replicas: 2
+    isFrontEnd: false
+    schedule: "* * */1 * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - ado-org-api
+      - service-tree
+      - vsts
+
+  - name: product-catalog-servicetreepush
+    type: job
+    appId: "5b67725b-d1b3-47a0-b475-3fad45079e7a"
+    image:
+      name: "1es/policy-catalog-servicetreepush"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "product-catalog-servicetreepush/src/product-catalog-servicetreepush.csproj"
+    assemblyName: "product-catalog-servicetreepush"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    volumes:
+      - name: kv-cert
+    replicas: 2
+    isFrontEnd: false
+    schedule: "* * */1 * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - vsts
+      - service-tree
+      - ado-org-api
+
+  - name: policy-catalog-api
+    type: api
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    authRedirectPath: "/signin-oidc"
+    image:
+      name: "1es/policy-catalog-api"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-catalog-api/src/policy-catalog-api.csproj"
+    assemblyName: "policy-catalog-api"
+    privateNugetFeed: AppCenterNuget
+    containerPort: 6004
+    sshPort: 51022
+    envFile: .env-shared
+    replicas: 2
+    isFrontEnd: true
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/status"
+    readinessCheck: "/status"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - product-catalog-api
+      - redis
+
+  - name: policy-status
+    type: job
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    image:
+      name: "1es/policy-status"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-status/src/policy-status.csproj"
+    assemblyName: "policy-status"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    schedule: "* */5 * * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - name: vsts
+      - name: policy-service
+
+  - name: policy-impact
+    type: job
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    image:
+      name: "1es/policy-impact"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-impact/src/policy-impact.csproj"
+    assemblyName: "policy-impact"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    schedule: "* 5 * * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - policy-service
+      - product-catalog-api
+      - policy-catalog-api
+      - vsts
+
+  - name: policy-impact-refresh-job
+    type: job
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    image:
+      name: "1es/policy-impact-refresh-job"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-impact-refresh-job/src/policy-impact-refresh-job.csproj"
+    assemblyName: "policy-impact-refresh-job"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    schedule: "* 1 * * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - name: vsts
+
+  - name: policy-engine
+    type: job
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    image:
+      name: "1es/policy-engine"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-engine/src/policy-engine.csproj"
+    assemblyName: "policy-engine"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    schedule: "* 3 * * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - policy-service
+      - product-catalog-api
+      - policy-catalog-api
+      - vsts
+
+  - name: policy-service
+    type: api
+    appId: "60b319cb-e55f-4acd-b895-0f0dfb7d6360"
+    authRedirectPath: "/signin-oidc"
+    image:
+      name: "1es/policy-service"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "policy-service/src/policy-service.csproj"
+    assemblyName: "policy-service"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    containerPort: 6003
+    sshPort: 51022
+    replicas: 2
+    isFrontEnd: true
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/status"
+    readinessCheck: "/status"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - product-catalog-api
+      - policy-catalog-api
+      - vsts
+
+  - name: extension-manager-job
+    type: job
+    appId: "61eae0cd-4c77-41e8-82ab-1cd1003f89d6"
+    image:
+      name: "1es/extension-manager-job"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "extension-manager-job/src/extension-manager-job.csproj"
+    assemblyName: "extension-manager-job"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    schedule: "* * 1 * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - ado-org-api
+      - kusto-vsosi
+
+  - name: ado-org-api
+    type: api
+    appId: "6c58224c-dc6e-4e7d-89b3-d232625c57b9"
+    authRedirectPath: "/signin-oidc"
+    image:
+      name: "1es/ado-org-api"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "1es-all.sln"
+    projectFile: "ado-org-api/src/ado-org-api.csproj"
+    assemblyName: "ado-org-api"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    containerPort: 6005
+    sshPort: 51022
+    replicas: 2
+    isFrontEnd: true
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/status"
+    readinessCheck: "/status"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+    depends:
+      - kusto-vsosi
+      - redis
+
+  - name: product-catalog-web
+    type: web
+    appId: "5b67725b-d1b3-47a0-b475-3fad45079e7a"
+    authRedirectPath: "/signin-oidc"
+    image:
+      name: "1es/product-catalog-web"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "product-catalog-web/product-catalog-web.sln"
+    projectFile: "product-catalog-web/src/product-catalog-web.csproj"
+    assemblyName: "product-catalog-web"
+    privateNugetFeed: AppCenterNuget
+    envFile: .env-shared
+    containerPort: 6002
+    sshPort: 51022
+    replicas: 2
+    isFrontEnd: true
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/status"
+    readinessCheck: "/status"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: "{{.Values.global.spaceName}}"
+      DEPLOYMENT_UNIT: "{{.Values.kv.name}}"
+    depends:
+      - vsts
+      - ado-org-api
+      - product-catalog-api
+      - vssps
+      - vsts-user
+      - graph
+      - service-tree

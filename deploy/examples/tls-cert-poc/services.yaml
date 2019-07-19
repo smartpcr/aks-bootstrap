@@ -1,0 +1,58 @@
+sourceCodeRepoRoot: "~/work/github/samples/tls-cert-poc"
+baseAppSettingsFile: "appsettings.json"
+acr:
+  name: "{{.Values.acr.name}}"
+shares:
+  - name: kv-cert
+    hostPath: "{{.Values.homeFolder}}/.secrets"
+    containerPath: "/secrets/disk/keyvault-certificate"
+    localOnly: true
+
+keyvault:
+  - name: "{{.Values.kv.name}}"
+    clientId: "{{.Values.kv.clientId}}"
+    clientCert: "{{.Values.kv.clientCertName}}"
+
+resources:
+  - name: api
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: job
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: web
+    requests:
+      memory: "250Mi"
+      cpu: "100m"
+    limits:
+      memory: "1000Mi"
+      cpu: "1500m"
+
+services:
+  - name: tls-poc
+    type: api
+    namespace: default
+    image:
+      name: "xd/tls-poc"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "SecureApi.sln"
+    projectFile: "secure-api/secure-api.csproj"
+    assemblyName: "secure-api"
+    containerPort: 7201
+    sshPort: 51022
+    isFrontEnd: true # whether to expose api endpoint to public via ingress
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/health/live"
+    readinessCheck: "/health/ready"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: Production

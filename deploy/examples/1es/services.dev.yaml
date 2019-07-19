@@ -1,0 +1,42 @@
+baseAppSettingsFile: "appsettings.Development.json"
+externalServices:
+  - name: service-tree
+    endpoint: "https://servicetreeppe.msftcloudes.com"
+    resourceId: "294223da-1062-4786-b12c-157b25c248fc"
+
+services:
+  - name: product-catalog-api
+    appId: "34118e01-f262-45e3-b4ee-12752716ae12"
+  - name: product-catalog-sync-job
+    type: job
+    appId: "34118e01-f262-45e3-b4ee-12752716ae12"
+  - name: policy-catalog-servicetreepush
+    type: job
+    appId: "34118e01-f262-45e3-b4ee-12752716ae12"
+  - name: policy-catalog-api
+    type: api
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: policy-status
+    type: job
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: policy-impact
+    type: job
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: policy-impact-refresh-job
+    type: job
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: policy-engine
+    type: job
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: policy-service
+    type: api
+    appId: "8e97a2d9-9aaa-461b-9130-269de2295b4d"
+  - name: extension-manager-job
+    type: job
+    appId: "61eae0cd-4c77-41e8-82ab-1cd1003f89d6"
+  - name: ado-org-api
+    type: api
+    appId: "66adda3e-dc2b-49ac-899a-fcde09b36eae"
+  - name: product-catalog-web
+    type: web
+    appId: "34118e01-f262-45e3-b4ee-12752716ae12"

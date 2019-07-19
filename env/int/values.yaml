@@ -1,0 +1,8 @@
+global:
+  owner: onees
+  envName: int
+  subscriptionName: Compliance_Tools_Eng
+  subscriptionAlias: 1es
+aks:
+  clusterName: onees-int-disco-east-us
+  resourceGroup: int-disco-east-us_akslinux

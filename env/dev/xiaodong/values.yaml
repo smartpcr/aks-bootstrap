@@ -1,0 +1,62 @@
+global:
+  owner: xiaodong
+  envName: dev
+  spaceName: xiaodong
+  subscriptionName: "Compliance_Tools_Eng"
+  subscriptionAlias: onees
+  productName: "devspace"
+  productShortName: "space"
+  resourceGroup: "azds-rg"
+  components:
+    cosmosdb:
+      docDb: true
+      mongoDb: false
+      graphDb: false
+kv:
+  name: xiaodong-kv
+  resourceGroup: "azds-rg"
+acr:
+  resourceGroup: "azds-rg"
+  email: xiaodoli@microsoft.com
+aks:
+  aksDnsPrefix: xiaodong
+  aksOwnerAadUpn: xiaodoli@microsoft.com
+  purpose: devspace
+  clusterName: "xiaodong-azds-dev"
+  resourceGroup: "azds-rg"
+  version: "1.14.0"
+  vmSize: Standard_D4s_v3
+  nodeCount: 2
+  servicePrincipal: "App Center AKS AAD (non-production)"
+  servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
+  forceResetSpn: false
+  clientAppName: "App Center AKS (non-production)"
+  access:
+    readers:
+      - name: "Compliance Tooling Team"
+        type: group
+    contributors:
+      - name: "1cs dri"
+        type: group
+    owners:
+      - name: xiaodoli@microsoft.com
+        type: user
+servicebus:
+  resourceGroup: "azds-rg"
+terraform:
+  resourceGroup: "azds-rg"
+appInsights:
+  resourceGroup: "azds-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "azds-rg"
+  graphDb:
+   resourceGroup: "azds-rg"
+  mongoDb:
+   resourceGroup: "azds-rg"
+dns:
+  resourceGroup: "azds-rg"
+trafficManager:
+  resourceGroup: "azds-rg"
+redis:
+  resourceGroup: "azds-rg"

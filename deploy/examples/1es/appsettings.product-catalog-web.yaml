@@ -1,0 +1,10 @@
+UI:
+  APPINSIGHTS_INSTRUMENTATION_KEY: "{{.Values.appInsights.instrumentationKey}}"
+  PRODCAT_API_URL: "https://$($({{.Values.services}}  | ? { $_.name -eq 'product-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ADO_ORG_API_URL: "https://$($({{.Values.services}}  | ? { $_.name -eq 'ado-org-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  AD_CLIENT_ID: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-web' }).appId)"
+  AD_RESOURCE_ID: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-web' }).appId)"
+  ADO_ORG_API_RESOURCE_ID: "$($({{.Values.services}} | ? { $_.name -eq 'ado-org-api' }).appId)"
+  AD_REDIRECT_URI: "https://$($({{.Values.services}}  | ? { $_.name -eq 'product-catalog-web' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}/redirect.html"
+  SERVICETREE_URL: "$($({{.Values.serviceSetting.externalServices}} | ? { $_.name -eq 'service-tree' }).endpoint)"
+EnableAadPodIdentity: {{.Values.aks.enableAadPodIdentity}}

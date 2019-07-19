@@ -1,0 +1,19 @@
+FROM microsoft/dotnet:2.2-aspnetcore-runtime-stretch-slim
+
+RUN useradd -m dotnet && \
+    cd /usr/local/share/ca-certificates/ && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/microsoft-internal-ca.crt && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/msit-ca-z2.crt && \
+    update-ca-certificates && \
+    apt-get update && \
+    apt-get -y --no-install-recommends install gettext-base unzip && \
+    apt-get clean && \
+    cd /usr/local/lib/ && \
+    curl -sSO https://avalanchebuildsupport.blob.core.windows.net/files/dotnet-pfxcert.zip && \
+    unzip dotnet-pfxcert.zip
+
+USER dotnet
+
+RUN cd /usr/local/lib/dotnet-pfxcert && \
+    dotnet dotnet-pfxcert.dll add "/usr/local/share/ca-certificates/microsoft-internal-ca.crt" --store "CurrentUser.Root" && \
+    dotnet dotnet-pfxcert.dll add "/usr/local/share/ca-certificates/msit-ca-z2.crt" --store "CurrentUser.CertificateAuthority"

@@ -1,0 +1,51 @@
+global:
+  owner: kojamroz
+  envName: dev
+  spaceName: kojamroz
+  subscriptionName: "Compliance_Tools_Eng"
+  subscriptionAlias: onees
+  productName: "devspace"
+  productShortName: "space"
+  resourceGroup: "kojamroz-rg"
+  components:
+    cosmosdb:
+      docDb: true
+      mongoDb: false
+      graphDb: false
+kv:
+  name: kojamroz-kv
+  resourceGroup: "kojamroz-rg"
+acr:
+  resourceGroup: "kojamroz-rg"
+  email: kojamroz@microsoft.com
+aks:
+  aksDnsPrefix: kojamroz
+  aksOwnerAadUpn: kojamroz@microsoft.com
+  purpose: devspace
+  clusterName: "kojamroz-azds-dev"
+  resourceGroup: "kojamroz-rg"
+  vmSize: Standard_D4s_v3
+  servicePrincipal: "App Center AKS AAD (non-production)"
+  servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
+  forceResetSpn: false
+  clientAppName: "App Center AKS (non-production)"
+  version: "1.13.5"
+servicebus:
+  resourceGroup: "kojamroz-rg"
+terraform:
+  resourceGroup: "kojamroz-rg"
+appInsights:
+  resourceGroup: "kojamroz-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "kojamroz-rg"
+  graphDb:
+   resourceGroup: "kojamroz-rg"
+  mongoDb:
+   resourceGroup: "kojamroz-rg"
+dns:
+  resourceGroup: "kojamroz-rg"
+trafficManager:
+  resourceGroup: "kojamroz-rg"
+redis:
+  resourceGroup: "kojamroz-rg"

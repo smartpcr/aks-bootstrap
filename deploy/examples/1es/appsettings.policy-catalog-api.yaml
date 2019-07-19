@@ -1,0 +1,14 @@
+ServiceTreeSettings:
+  BaseUrl: "$($({{.Values.serviceSetting.externalServices}} | ? { $_.name -eq 'service-tree' }).endpoint)"
+  ResourceId: "$($({{.Values.serviceSetting.externalServices}} | ? { $_.name -eq 'service-tree' }).resourceId)"
+WhiteListedApps:
+  Apps:
+    - AppName: ProductCatalog
+      AppId: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-api' }).appId)"
+AdoOrgApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'ado-org-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'ado-org-api' }).appId)"
+ProductCatalogApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'product-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-api' }).appId)"
+EnableAadPodIdentity: {{.Values.aks.enableAadPodIdentity}}

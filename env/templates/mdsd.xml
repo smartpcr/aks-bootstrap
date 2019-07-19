@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MonitoringManagement version="1.0" namespace="{{.Values.geneva.namespace}}" eventVersion="8" timestamp="2018-05-08T20:00:00.000">
+    <Accounts>
+        <Account moniker="{{.Values.geneva.mdsd.monikers.general.name}}" isDefault="true" autoKey="true"></Account>
+        <Account moniker="{{.Values.geneva.mdsd.monikers.security.name}}" autoKey="true"></Account>
+    </Accounts>
+    <Management eventVolume="Large" defaultRetentionInDays="90" >
+        <Identity>
+            <IdentityComponent name="Tenant" envariable="TENANT"/>
+            <IdentityComponent name="Role" envariable="ROLE"/>
+            <IdentityComponent name="RoleInstance" envariable="ROLEINSTANCE"/>
+            <IdentityComponent name="GenevaPodName" useComputerName="true"/>
+        </Identity>
+        <AgentResourceUsage diskQuotaInMB="5000" />
+    </Management>
+    <Schemas>
+        <!-- SYSLOG - used for sending unstructured logs only + AzSecPack logs from scanners (read only) -->
+        <Schema name="syslog">
+            <Column name="Facility" mdstype="mt:wstr" type="str"></Column>
+            <Column name="Severity" mdstype="mt:int32" type="str"></Column>
+            <Column name="EventTime" mdstype="mt:utc" type="str-rfc3339"></Column>
+            <Column name="SendingHost" mdstype="mt:wstr" type="str"></Column>
+            <Column name="Msg" mdstype="mt:wstr" type="str"></Column>
+        </Schema>
+
+        <!-- Audit schema - used for security-related events logging -->
+        <Schema name="audit">
+            <Column name="OperationName" mdstype="mt:wstr" type="str"></Column>
+            <Column name="resultType" mdstype="mt:wstr" type="str"></Column>
+            <Column name="resultDescription" mdstype="mt:wstr" type="str"></Column>
+            <Column name="Category" mdstype="mt:wstr" type="str"></Column>
+            <Column name="CallerIdentityType" mdstype="mt:wstr" type="str"></Column>
+            <Column name="CallerIdentity" mdstype="mt:wstr" type="str"></Column>
+            <Column name="CallerIpAddress" mdstype="mt:wstr" type="str"></Column>
+            <Column name="CallerDisplayName" mdstype="mt:wstr" type="str"></Column>
+            <Column name="TargetResourceType" mdstype="mt:wstr" type="str"></Column>
+            <Column name="TargetResourceName" mdstype="mt:wstr" type="str"></Column>
+        </Schema>
+
+        <!-- UtmEvent - used by Urchin Tracking Module -->
+        <Schema name="utm">
+            <Column name="user_id" mdstype="mt:wstr" type="str"></Column>
+            <Column name="utm_source" mdstype="mt:wstr" type="str"></Column>
+            <Column name="utm_medium" mdstype="mt:wstr" type="str"></Column>
+            <Column name="utm_campaign" mdstype="mt:wstr" type="str"></Column>
+            <Column name="utm_term" mdstype="mt:wstr" type="str"></Column>
+            <Column name="utm_content" mdstype="mt:wstr" type="str"></Column>
+        </Schema>
+    </Schemas>
+    <Sources>
+        <!-- AzSecPack -->
+        <Source name="kern" schema="syslog"></Source>
+        <Source name="auth" schema="syslog"></Source>
+        <Source name="authpriv" schema="syslog"></Source>
+        <Source name="cron" schema="syslog"></Source>
+        <Source name="user" schema="syslog"></Source>
+        <Source name="daemon" schema="syslog"></Source>
+        <Source name="syslog" schema="syslog"></Source>
+        <Source name="heartbeat" schema="syslog"></Source>
+        <Source name="baseline" schema="syslog"></Source>
+        <Source name="software" schema="syslog"></Source>
+        <Source name="clamav" schema="syslog"></Source>
+
+        <!-- Audit -->
+        <Source name="audit" schema="audit"></Source>
+
+        <!-- Urchin Tracking Module events -->
+        <Source name="utm" schema="utm"></Source>
+
+        <!-- fluentd -->
+        <Source name="k8scontainers" dynamic_schema="true" />
+        <Source name="syslog" dynamic_schema="true" />
+        <Source name="fluentd" dynamic_schema="true" />
+    </Sources>
+    <Events>
+        <MdsdEvents>
+            <!-- AzSecPack -->
+            <MdsdEventSource source="kern">
+                <RouteEvent eventName="LinuxAsmSecurity" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="auth">
+                <RouteEvent eventName="LinuxAsmSecurity" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="authpriv">
+                <RouteEvent eventName="LinuxAsmSecurity" priority="High" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="cron">
+                <RouteEvent eventName="LinuxAsmSyslog" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="user">
+                <RouteEvent eventName="LinuxAsmSyslog" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="daemon">
+                <RouteEvent eventName="LinuxAsmSyslog" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="syslog">
+                <RouteEvent eventName="LinuxAsmSyslog" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="heartbeat">
+                <RouteEvent eventName="LinuxAsmHeartbeat" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="baseline">
+                <RouteEvent eventName="LinuxAsmBaseline" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="software">
+                <RouteEvent eventName="LinuxAsmSoftware" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+            <MdsdEventSource source="clamav">
+                <RouteEvent eventName="LinuxAsmClamav" priority="Normal" account="{{.Values.geneva.mdsd.monikers.security.Name}}" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+
+            <!-- Audit -->
+            <MdsdEventSource source="audit">
+                <RouteEvent eventName="AuditEvent" priority="Normal" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+
+            <!-- Urchin Tracking Module events -->
+            <MdsdEventSource source="utm">
+                <RouteEvent eventName="UtmEvent" priority="Normal" storeType="CentralBond"></RouteEvent>
+            </MdsdEventSource>
+
+            <!-- fluentd -->
+            <MdsdEventSource source="k8scontainers">
+                <RouteEvent eventName="KubernetesContainers" storeType="CentralBond" priority="Normal" />
+            </MdsdEventSource>
+            <MdsdEventSource source="syslog">
+                <RouteEvent eventName="SysLog" storeType="CentralBond" priority="Normal" />
+            </MdsdEventSource>
+            <MdsdEventSource source="fluentd">
+                <RouteEvent eventName="DynamicServiceLog" priority="Normal" storeType="CentralBond" dontUsePerNDayTable="true" />
+            </MdsdEventSource>
+        </MdsdEvents>
+    </Events>
+</MonitoringManagement>

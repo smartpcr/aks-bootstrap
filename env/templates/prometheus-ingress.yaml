@@ -1,0 +1,68 @@
+# Depending on which DNS solution you have installed in your cluster enable the right exporter
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: true
+
+alertmanager:
+  alertmanagerSpec:
+    logLevel: "{{.Values.prometheus.alertmanager.logLevel}}"
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - "alertmanager-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+    tls:
+      - secretName: "{{.Values.dns.sslCert}}"
+        hosts:
+          - "alertmanager-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - "prometheus-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+    tls:
+      - secretName: "{{.Values.dns.sslCert}}"
+        hosts:
+          - "prometheus-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+
+grafana:
+  adminUser: "{{.Values.prometheus.grafana.adminUser}}"
+  adminPassword: "{{.Values.prometheus.grafana.adminPassword}}"
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - "grafana-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+    tls:
+      - secretName: "{{.Values.dns.sslCert}}"
+        hosts:
+          - "grafana-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  persistence:
+    enabled: true
+    accessModes: ["ReadWriteOnce"]
+    size: 10Gi

@@ -1,0 +1,43 @@
+global:
+  owner: xiaodoli
+  spaceName: xiaodoli
+  envName: dev
+  subscriptionName: xiaodoli
+  subscriptionAlias: xdli
+  productName: "devspace"
+  productShortName: "space"
+  resourceGroup: "azds-rg"
+kv:
+  name: xiaodoli-kv
+  resourceGroup: "azds-rg"
+acr:
+  resourceGroup: "azds-rg"
+  email: xiaodoli@microsoft.com
+aks:
+  aksDnsPrefix: xiaodoli
+  aksOwnerAadUpn: xiaodoli.onmicrosoft.com
+  purpose: devspace
+  clusterName: "xiaodoli-azds-k8s-dev"
+  resourceGroup: "azds-rg"
+  vmSize: Standard_D4s_v3
+  servicePrincipal: "App Center AKS AAD (non-production)"
+  servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
+  forceResetSpn: false
+  clientAppName: "App Center AKS (non-production)"
+servicebus:
+  resourceGroup: "azds-rg"
+terraform:
+  resourceGroup: "azds-rg"
+appInsights:
+  resourceGroup: "azds-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "azds-rg"
+  graphDb:
+   resourceGroup: "azds-rg"
+  mongoDb:
+   resourceGroup: "azds-rg"
+dns:
+  resourceGroup: "azds-rg"
+trafficManager:
+  resourceGroup: "azds-rg"

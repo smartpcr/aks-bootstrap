@@ -1,0 +1,101 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{.Values.service.name}}"
+  labels:
+    app: "{{.Values.service.name}}"
+    aadpodidbinding: "{{.Values.service.name}}"
+spec:
+  replicas: {{.Values.service.replicas}}
+  selector:
+    matchLabels:
+      app: "{{.Values.service.name}}"
+  template:
+    metadata:
+      labels:
+        app: "{{.Values.service.name}}"
+        aadpodidbinding: "{{.Values.service.name}}"
+    spec:
+      containers:
+        - name: "{{.Values.service.name}}"
+          image: "{{.Values.acrName}}.azurecr.io/{{.Values.service.image.name}}:{{.Values.service.image.tag}}"
+          resources:
+            requests:
+              memory: "{{.Values.service.resources.requests.memory}}"
+              cpu: "{{.Values.service.resources.requests.cpu}}"
+            limits:
+              memory: "{{.Values.service.resources.limits.memory}}"
+              cpu: "{{.Values.service.resources.limits.cpu}}"
+          securityContext:
+            capabilities:
+              drop:
+              - all
+          livenessProbe:
+            httpGet:
+              path: "{{.Values.service.livenessCheck}}"
+              port: {{.Values.service.containerPort}}
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: "{{.Values.service.readinessCheck}}"
+              port: {{.Values.service.containerPort}}
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+          env:
+            - name: "ASPNETCORE_ENVIRONMENT"
+              value: "{{.Values.service.env.ASPNETCORE_ENVIRONMENT}}"
+            - name: "tenant"
+              value: "{{.Values.aks.clusterName}}-{{.Values.global.envName}}"
+            - name: "role"
+              value: "{{.Values.service.name}}.{{.Values.global.envName}}"
+            - name: "DEPLOYMENT_UNIT"
+              value: "{{.Values.service.env.DEPLOYMENT_UNIT}}"
+          ports:
+          - containerPort: {{.Values.service.containerPort}}
+            protocol: TCP
+
+      imagePullSecrets:
+        - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{.Values.service.name}}"
+  namespace: default
+spec:
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: {{.Values.service.containerPort}}
+    name: "{{.Values.service.name}}-https"
+  selector:
+    app: "{{.Values.service.name}}"
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: "{{.Values.service.name}}"
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+  - hosts:
+    - "{{.Values.service.name}}-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+    secretName: {{.Values.service.sslCert}}
+  rules:
+  - host: "{{.Values.service.name}}-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "{{.Values.service.name}}"
+          servicePort: 443

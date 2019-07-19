@@ -1,0 +1,19 @@
+---
+kind: Certificate
+apiVersion: certmanager.k8s.io/v1alpha1
+metadata:
+  name: "{{.Values.service.hostName}}-tls"
+  namespace: {{.Values.service.namespace}}
+spec:
+  secretName: "{{.Values.service.hostName}}-tls"
+  dnsNames:
+    - {{.Values.service.hostName}}
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - {{.Values.service.hostName}}
+  issuerRef:
+    name: "cluster-issuer-{{.Values.global.envName}}"
+    kind: ClusterIssuer

@@ -1,0 +1,59 @@
+version: '2'
+services:
+  web:
+    image: web
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    links:
+      - fluentd
+      - telegraf
+    ports:
+      - "8000:80"
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: httpd.access
+
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - elasticsearch
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  elasticsearch:
+    image: elasticsearch
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: kibana
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
+
+  influxdb:
+    image: influxdb
+    volumes:
+      - ./influxdb:/var/lib/influxdb:rw
+    ports:
+      - "8086:8086"
+
+  grafana:
+    image: grafana/grafana
+    links: 
+      - "influxdb"
+    ports:
+      - "3000:3000"
+
+ 

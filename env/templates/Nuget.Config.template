@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="{{.Values.nugetFeedName}}" value="{{.Values.nugetFeedUrl}}" />
+  </packageSources>
+  <packageSourceCredentials>
+    <{{.Values.nugetFeedName}}>
+      <add key="Username" value="PAT" />
+      <!--[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Value is a placeholder.")]-->
+      <add key="ClearTextPassword" value="{{.Values.nugetFeedPat}}" />
+    </{{.Values.nugetFeedName}}>
+  </packageSourceCredentials>
+</configuration>

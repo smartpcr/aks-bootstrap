@@ -1,0 +1,44 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: "{{.Values.service.name}}"
+  labels:
+    app: "{{.Values.service.name}}"
+    aadpodidbinding: "{{.Values.service.name}}"
+spec:
+  concurrencyPolicy: "{{.Values.service.concurrencyPolicy}}"
+  schedule: "{{.Values.service.schedule}}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: "{{.Values.service.name}}"
+          labels:
+            app: "{{.Values.service.name}}"
+            aadpodidbinding: "{{.Values.service.name}}"
+        spec:
+          restartPolicy: "{{.Values.service.restartPolicy}}"
+          containers:
+            - name: "{{.Values.service.name}}"
+              image: "{{.Values.acr.name}}.azurecr.io/{{.Values.service.image.name}}:{{.Values.service.image.tag}}"
+              env:
+              - name: ASPNETCORE_ENVIRONMENT
+                value: "{{.Values.service.env.ASPNETCORE_ENVIRONMENT}}"
+              - name: "tenant"
+                value: "{{.Values.aks.clusterName}}-{{.Values.global.envName}}"
+              - name: "role"
+                value: "{{.Values.service.name}}.{{.Values.global.envName}}"
+              resources:
+                requests:
+                  memory: "{{.Values.service.resources.requests.memory}}"
+                  cpu: "{{.Values.service.resources.requests.cpu}}"
+                limits:
+                  memory: "{{.Values.service.resources.limits.memory}}"
+                  cpu: "{{.Values.service.resources.limits.cpu}}"
+              securityContext:
+                capabilities:
+                  drop:
+                  - all
+
+          imagePullSecrets:
+            - name: acr-auth

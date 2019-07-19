@@ -1,0 +1,10 @@
+ProductCatalogApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'product-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'product-catalog-api' }).appId)"
+PolicyCatalogApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'policy-catalog-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'policy-catalog-api' }).appId)"
+PolicyServiceApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'policy-service' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'policy-service' }).appId)"
+EnableAadPodIdentity: "false"

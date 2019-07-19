@@ -1,0 +1,4 @@
+AdoOrgApiSettings:
+  Endpoint: "https://$($({{.Values.services}}  | ? { $_.name -eq 'ado-org-api' }).name)-{{.Values.global.productShortName}}-{{.Values.global.location}}.{{.Values.dns.domain}}"
+  ResourceId: "$($({{.Values.services}} | ? { $_.name -eq 'ado-org-api' }).appId)"
+EnableAadPodIdentity: "false"

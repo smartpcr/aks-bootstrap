@@ -1,0 +1,68 @@
+sourceCodeRepoRoot: "c:/work/my/samples"
+acr:
+  name: "{{.Values.acr.name}}"
+nugetFeeds:
+  - name: AppCenterNuGet
+    url: https://msmobilecenter.pkgs.visualstudio.com/_packaging/AppCenterNuGet/nuget/v3/index.json
+    passwordFromEnvironment: AppCenterNuGet
+shares:
+  - name: kv-cert
+    hostPath: "{{.Values.homeFolder}}/.secrets"
+    containerPath: "/secrets/disk/keyvault-certificate"
+    localOnly: true
+resources:
+  - name: api
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: job
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "800Mi"
+      cpu: "750m"
+  - name: web
+    requests:
+      memory: "250Mi"
+      cpu: "100m"
+    limits:
+      memory: "1000Mi"
+      cpu: "1500m"
+services:
+  - name: sample-api
+    type: api
+    image:
+      name: "xd/sample-api"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "Samples.sln"
+    projectFile: "Samples.Api/Samples.Api.csproj"
+    assemblyName: "Samples.Api"
+    privateNugetFeed: AppCenterNuget
+    containerPort: 19990
+    sshPort: 51022
+    isFrontEnd: true # whether to expose api endpoint to public via ingress
+    sslCert: "{{.Values.dns.sslCert}}"
+    livenessCheck: "/health/live"
+    readinessCheck: "/health/ready"
+    volumes:
+      - name: kv-cert
+    env:
+      ASPNETCORE_ENVIRONMENT: Production
+  - name: sample-job
+    type: job
+    image:
+      name: "xd/sample-job"
+      tag: "{{.Values.buildNumber}}"
+    solutionFile: "Samples.sln"
+    projectFile: "Samples.CommandLine/Samples.CommandLine.csproj"
+    assemblyName: "Samples.CommandLine"
+    privateNugetFeed: AppCenterNuget
+    schedule: "*/1 * * * *"
+    restartPolicy: "Never"
+    concurrencyPolicy: "Forbid"
+    env:
+      ASPNETCORE_ENVIRONMENT: Production

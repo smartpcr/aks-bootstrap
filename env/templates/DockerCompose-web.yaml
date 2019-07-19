@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  {{.Values.service.name}}:
+    container_name: "{{.Values.service.name}}"
+    image: "{{.Values.acrName}}.azurecr.io/{{.Values.service.image.name}}:{{.Values.service.image.tag}}"
+    env_file: .env-shared
+    ports: 
+    - "{{.Values.service.sshPort}}:22"
+    - "{{.Values.service.containerPort}}:{{.Values.service.containerPort}}"
+    volumes: 
+    - "{{.Values.service.volumes}}"
+    build:
+      args:
+        CONFIGURATION: "{{.Values.service.buildConfiguration}}"
+      context: "{{.Values.service.dockerContext}}"
+      dockerfile: "{{.Values.service.dockerFile}}"
