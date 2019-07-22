@@ -2,7 +2,7 @@
 function SetAcrCredential() {
     param(
         [string]$SubscriptionName = "Compliance_Tools_Eng",
-        [string]$AcrName = "linuxgeneva",
+        [string]$AcrName = "linuxgeneva-microsoft",
         [string]$VaultSubscriptionName = "xiaodoli",
         [string]$VaultName = "xiaodoli-kv",
         [string]$AcrSecret = "linuxgeneva-credentials",
@@ -20,6 +20,7 @@ function SetAcrCredential() {
     $acr = $null
     $acrPassword = $null
     $acrUsername = $null
+    $acrLoginServer = $null
     if ($SpnAppId -ne $null -and $SpnPwdSecret -ne $null -and $SpnAppId -ne "" -and $SpnPwdSecret -ne "") {
         $spnPwd = az keyvault secret show --name $SpnPwdSecret --vault-name $VaultName | ConvertFrom-Json
         # az login `
@@ -36,6 +37,7 @@ function SetAcrCredential() {
         $acrPassword = $spnPwd.value
         # az account set -s $SubscriptionName
         $acrUsername = $SpnAppId
+        $acrLoginServer = "$($AcrName).azurecr.io"
     }
     else {
         az acr login -n $AcrName | Out-Null
@@ -45,10 +47,11 @@ function SetAcrCredential() {
         $acrPassword = $acrPassword
         $acr = az acr show --name $AcrName | ConvertFrom-Json
         $acrUsername = $AcrName
+        $acrLoginServer = $acr.loginServer
     }
 
     $acrCredential = @{
-        loginServer = $acr.loginServer
+        loginServer = $acrLoginServer
         username    = $acrUsername
         password    = $acrPassword
     }
@@ -103,8 +106,8 @@ function SyncDockerImageWithTag() {
 
 function GetAllDockerImages() {
     param(
-        [string] $AcrSecret = "linuxgeneva-microsoft",
-        [string] $VaultName = "xiaodong-kv"
+        [string] $AcrSecret = "linuxgeneva-microsoft-credentials",
+        [string] $VaultName = "xiaodoli-kv"
     )
 
     $acrCredentialSecret = az keyvault secret show --name $AcrSecret --vault-name $VaultName | ConvertFrom-Json
