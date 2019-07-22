@@ -122,7 +122,7 @@ function SyncDockerImage() {
     param(
         [string]$SourceAcrName = "oneesdevacr",
         [object]$SourceAcrCredential,
-        [string]$TargetAcrName = "rrdpdevacr",
+        [string]$TargetAcrName = "xdlidevacr",
         [object]$TargetAcrCredential,
         [string]$ImageName = "1es/policy-engine"
     )

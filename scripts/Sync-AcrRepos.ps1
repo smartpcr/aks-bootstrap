@@ -112,7 +112,8 @@ $sourceAcrSettings | ForEach-Object {
             -SourceAcrName $AcrName `
             -SourceAcrCredential $AcrCredential `
             -TargetAcrName $bootstrapValues.acr.name `
-            -TargetAcrCredential $TargetAcrCredential
+            -TargetAcrCredential $TargetAcrCredential `
+            -ImageName $ImageName
 
         $imagePushed++
     }
