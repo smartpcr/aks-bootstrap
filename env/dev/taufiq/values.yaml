@@ -16,6 +16,7 @@ kv:
   name: taufiq-kv
   resourceGroup: "taufiq-rg"
 acr:
+  name: "taufiqacr"
   resourceGroup: "taufiq-rg"
   email: tamal@microsoft.com
 aks:
