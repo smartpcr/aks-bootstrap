@@ -66,6 +66,6 @@ cosmosDb:
    resourceGroup: "azds-rg"
 dns:
   resourceGroup: "azds-rg"
-  domain: "{{ .Values.global.envName }}.xiaodong.cloud"
+  domain: "dev.xiaodong.cloud"
 trafficManager:
   resourceGroup: "azds-rg"
