@@ -3,7 +3,7 @@ param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
     [ValidateSet("rrdp", "rrdu", "aamva", "xiaodoli", "xiaodong", "comp", "kojamroz")]
-    [string] $SpaceName = "rrdp",
+    [string] $SpaceName = "xiaodoli",
     [bool] $IsLocal = $false
 )
 
