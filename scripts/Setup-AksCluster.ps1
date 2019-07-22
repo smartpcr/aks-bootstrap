@@ -387,16 +387,6 @@ if ($bootstrapValues.aks.keyVaultAccess -contains "podIdentity") {
 }
 
 
-LogStep -Step 10 -Message "Setup monitoring infrastructure..."
-if ($bootstrapValues.aks.metrics -contains "prometheus" -or $bootstrapValues.aks.logging -contains "prometheus") {
-    LogInfo "Setting up prometheus..."
-    & "$scriptFolder\Setup-Prometheus.ps1" -EnvName $EnvName -SpaceName $SpaceName
-}
-else {
-    LogInfo -Message "prometheus is disabled"
-}
-
-
 LogStep -Step 11 -Message "Setup geneva hot path..."
 if ($bootstrapValues.aks.metrics -contains "geneva") {
     LogInfo "Setting up geneva mdm..."
@@ -430,4 +420,14 @@ else {
 if ($bootstrapValues.aks.useCertManager) {
     LogStep -Step 14 -Message "Setup cert-manager..."
     & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
+}
+
+
+LogStep -Step 15 -Message "Setup monitoring infrastructure..."
+if ($bootstrapValues.aks.metrics -contains "prometheus" -or $bootstrapValues.aks.logging -contains "prometheus") {
+    LogInfo "Setting up prometheus..."
+    & "$scriptFolder\Setup-Prometheus.ps1" -EnvName $EnvName -SpaceName $SpaceName
+}
+else {
+    LogInfo -Message "prometheus is disabled"
 }
