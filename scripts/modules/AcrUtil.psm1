@@ -3,7 +3,8 @@ function SetAcrCredential() {
     param(
         [string]$SubscriptionName = "Compliance_Tools_Eng",
         [string]$AcrName = "linuxgeneva",
-        [string]$VaultName = "xiaodong-kv",
+        [string]$VaultSubscriptionName = "xiaodoli",
+        [string]$VaultName = "xiaodoli-kv",
         [string]$AcrSecret = "linuxgeneva-credentials",
         [string]$SpnAppId = "9beb98b0-4b0d-4989-b4ea-625d28b7d98a",
         [string]$SpnPwdSecret = "xiaodoli-acr-sp-pwd"
@@ -21,13 +22,19 @@ function SetAcrCredential() {
     $acrUsername = $null
     if ($SpnAppId -ne $null -and $SpnPwdSecret -ne $null -and $SpnAppId -ne "" -and $SpnPwdSecret -ne "") {
         $spnPwd = az keyvault secret show --name $SpnPwdSecret --vault-name $VaultName | ConvertFrom-Json
-        az login --service-principal --username $SpnAppId --password $spnPwd.value --tenant $azAccount.tenantId | Out-Null
+        # az login `
+        #     --service-principal `
+        #     --username $SpnAppId `
+        #     --password $spnPwd.value `
+        #     --tenant $azAccount.tenantId `
+        #     --allow-no-subscriptions | Out-Null
 
-        $acr = az acr show --name $AcrName | ConvertFrom-Json
-        az acr login --name $AcrName --username $SpnAppId --password $spnPwd.value | Out-Null
-        $spnPwd.value | docker login $acr.loginServer --username $SpnAppId --password-stdin | Out-Null
+        # $acr = az acr show --name $AcrName | ConvertFrom-Json
+        # az acr login --name $AcrName --username $SpnAppId --password $spnPwd.value | Out-Null
+        # $acrLoginServer = "$($AcrName).azurecr.io"
+        # $spnPwd.value | docker login $acrLoginServer --username $SpnAppId --password-stdin | Out-Null
         $acrPassword = $spnPwd.value
-        az account set -s $SubscriptionName
+        # az account set -s $SubscriptionName
         $acrUsername = $SpnAppId
     }
     else {
@@ -47,6 +54,13 @@ function SetAcrCredential() {
     }
     $acrCredentialJson = $acrCredential | ConvertTo-Json
     $base64encoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($acrCredentialJson))
+
+    $azAccount = az account show | ConvertFrom-Json
+    if ($null -ne $azAccount -and $azAccount.name -ine $VaultSubscriptionName) {
+        az login | Out-Null
+        az account set -s $VaultSubscriptionName
+        $azAccount = az account show | ConvertFrom-Json
+    }
     az keyvault secret set --name $AcrSecret --vault-name $VaultName --value $base64encoded | Out-Null
 
     return $acrCredential

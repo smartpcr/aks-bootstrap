@@ -32,7 +32,10 @@ function SyncAdditionalSecrets() {
         [string] $SrcSubscriptionName = "Compliance_Tools_Eng",
         [string] $TgtVaultName = "xiaodoli-kv",
         [string] $TgtSubscriptionName = "xiaodoli",
-        [string[]] $SecretNames = @("AppCenter-AKS-AADAppPwd")
+        [string[]] $SecretNames = @(
+            "AppCenter-AKS-AADAppPwd",
+            "registry1811d0c3-credentials",
+            "xiaodoli-acr-sp-pwd")
     )
 
     LoginAzureAsUser -SubscriptionName $SrcSubscriptionName | Out-Null
@@ -49,8 +52,10 @@ function SyncAdditionalSecrets() {
 
     LoginAzureAsUser -SubscriptionName $TgtSubscriptionName | Out-Null
     $secrets | ForEach-Object {
-        LogInfo -Message "Set secret '$_.Name'..."
-        az keyvault secret set --vault-name $TgtVaultName --name $_.Name --value $_.Value | Out-Null
+        $secretName = $_.Name
+        $secretValue = $_.Value
+        LogInfo -Message "Set secret '$secretName'='$secretValue'..."
+        az keyvault secret set --vault-name $TgtVaultName --name $secretName --value $secretValue | Out-Null
     }
 }
 
