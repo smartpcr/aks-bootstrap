@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong"
+    [string] $SpaceName = "xiaodoli"
 )
 
 $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
@@ -50,6 +50,7 @@ kubectl get secret $bootstrapValues.dns.sslCert -o yaml --export | kubectl apply
 $prometheusTemplateFile = Join-Path $templatesFolder "prometheus-ingress.yaml"
 $prometheusTemplate = Get-Content $prometheusTemplateFile -Raw
 $prometheusTemplate = Set-YamlValues -valueTemplate $prometheusTemplate -settings $bootstrapValues
+$prometheusTemplate = Set-YamlValues -valueTemplate $prometheusTemplate -settings $bootstrapValues #fix problem
 $prometheusYamlFile = Join-Path $yamlsFolder "prometheus-values.yaml"
 $prometheusTemplate | Out-File $prometheusYamlFile -Encoding utf8 -Force | Out-Null
 
