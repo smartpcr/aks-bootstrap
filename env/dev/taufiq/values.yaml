@@ -1,0 +1,63 @@
+global:
+  owner: taufiq
+  envName: dev
+  spaceName: taufiq
+  subscriptionName: "Compliance_Tools_Eng"
+  subscriptionAlias: onees
+  productName: "devspace"
+  productShortName: "space"
+  resourceGroup: "taufiq-rg"
+  components:
+    cosmosdb:
+      docDb: true
+      mongoDb: false
+      graphDb: false
+kv:
+  name: taufiq-kv
+  resourceGroup: "taufiq-rg"
+acr:
+  name: "taufiqacr"
+  resourceGroup: "taufiq-rg"
+  email: tamal@microsoft.com
+aks:
+  aksDnsPrefix: taufiq
+  aksOwnerAadUpn: tamal@microsoft.com
+  purpose: devspace
+  clusterName: "taufiq-azds-dev"
+  resourceGroup: "taufiq-rg"
+  version: "1.14.0"
+  vmSize: Standard_D4s_v3
+  nodeCount: 2
+  servicePrincipal: "App Center AKS AAD (non-production)"
+  servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
+  forceResetSpn: false
+  clientAppName: "App Center AKS (non-production)"
+  access:
+    readers:
+      - name: "Compliance Tooling Team"
+        type: group
+    contributors:
+      - name: "1cs dri"
+        type: group
+    owners:
+      - name: tamal@microsoft.com
+        type: user
+servicebus:
+  resourceGroup: "taufiq-rg"
+terraform:
+  resourceGroup: "taufiq-rg"
+appInsights:
+  resourceGroup: "taufiq-rg"
+cosmosDb:
+  docDb:
+   resourceGroup: "taufiq-rg"
+  graphDb:
+   resourceGroup: "taufiq-rg"
+  mongoDb:
+   resourceGroup: "taufiq-rg"
+dns:
+  resourceGroup: "taufiq-rg"
+trafficManager:
+  resourceGroup: "taufiq-rg"
+redis:
+  resourceGroup: "taufiq-rg"
