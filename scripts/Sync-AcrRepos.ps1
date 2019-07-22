@@ -49,25 +49,42 @@ $sourceAcrSettings.Add(@{
         Credential        = $AcrCredential
     }) | Out-Null
 
-$AcrName = "linuxgeneva-microsoft"
-$SpnAppId = "9beb98b0-4b0d-4989-b4ea-625d28b7d98a"
+$AcrName = "oneesdevacr"
 $AcrSecret = "$AcrName-credentials"
-$SpnName = "xiaodoli-acr-sp"
-$SpnPwdSecret = "$SpnName-pwd"
 Write-Host "Setting access to acr '$AcrName'..."
 $AcrCredential = SetAcrCredential `
     -AcrName $AcrName `
     -AcrSecret $AcrSecret `
-    -SpnAppId $SpnAppId `
+    -SpnAppId $null `
     -SubscriptionName "Compliance_Tools_Eng" `
     -VaultSubscriptionName $bootstrapValues.global.subscriptionName `
     -VaultName $vaultName `
-    -SpnPwdSecret $SpnPwdSecret
+    -SpnPwdSecret $null
 $sourceAcrSettings.Add(@{
         AcrName           = $AcrName
-        TargetImageFolder = "geneva"
+        TargetImageFolder = "1es"
         Credential        = $AcrCredential
     }) | Out-Null
+
+# $AcrName = "linuxgeneva-microsoft"
+# $SpnAppId = "9beb98b0-4b0d-4989-b4ea-625d28b7d98a"
+# $AcrSecret = "$AcrName-credentials"
+# $SpnName = "xiaodoli-acr-sp"
+# $SpnPwdSecret = "$SpnName-pwd"
+# Write-Host "Setting access to acr '$AcrName'..."
+# $AcrCredential = SetAcrCredential `
+#     -AcrName $AcrName `
+#     -AcrSecret $AcrSecret `
+#     -SpnAppId $SpnAppId `
+#     -SubscriptionName "Compliance_Tools_Eng" `
+#     -VaultSubscriptionName $bootstrapValues.global.subscriptionName `
+#     -VaultName $vaultName `
+#     -SpnPwdSecret $SpnPwdSecret
+# $sourceAcrSettings.Add(@{
+#         AcrName           = $AcrName
+#         TargetImageFolder = "geneva"
+#         Credential        = $AcrCredential
+#     }) | Out-Null
 
 
 $TargetAcrCredential = SetAcrCredential `
