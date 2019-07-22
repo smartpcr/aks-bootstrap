@@ -32,22 +32,23 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 $vaultName = $bootstrapValues.kv.name
 
 $sourceAcrSettings = New-Object System.Collections.ArrayList
-$AcrName = "registry1811d0c3"
-$AcrSecret = "$AcrName-credentials"
-Write-Host "Setting access to acr '$AcrName'..."
-$AcrCredential = SetAcrCredential `
-    -AcrName $AcrName `
-    -AcrSecret $AcrSecret `
-    -SpnAppId $null `
-    -SubscriptionName "Compliance_Tools_Eng" `
-    -VaultSubscriptionName $bootstrapValues.global.subscriptionName `
-    -VaultName $vaultName `
-    -SpnPwdSecret $null
-$sourceAcrSettings.Add(@{
-        AcrName           = $AcrName
-        TargetImageFolder = "1es"
-        Credential        = $AcrCredential
-    }) | Out-Null
+
+# $AcrName = "registry1811d0c3"
+# $AcrSecret = "$AcrName-credentials"
+# Write-Host "Setting access to acr '$AcrName'..."
+# $AcrCredential = SetAcrCredential `
+#     -AcrName $AcrName `
+#     -AcrSecret $AcrSecret `
+#     -SpnAppId $null `
+#     -SubscriptionName "Compliance_Tools_Eng" `
+#     -VaultSubscriptionName $bootstrapValues.global.subscriptionName `
+#     -VaultName $vaultName `
+#     -SpnPwdSecret $null
+# $sourceAcrSettings.Add(@{
+#         AcrName           = $AcrName
+#         TargetImageFolder = "1es"
+#         Credential        = $AcrCredential
+#     }) | Out-Null
 
 $AcrName = "oneesdevacr"
 $AcrSecret = "$AcrName-credentials"
