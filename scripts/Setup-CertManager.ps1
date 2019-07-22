@@ -54,13 +54,17 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 
 LogStep -Step 2 -Message "Installing cert-manager..."
 LogInfo -Message "Clearing previous installation..."
-helm delete --purge cert-manager
-kubectl delete crd certificates.certmanager.k8s.io
-kubectl delete crd challenges.certmanager.k8s.io
-kubectl delete crd clusterissuers.certmanager.k8s.io
-kubectl delete crd issuers.certmanager.k8s.io
-kubectl delete crd orders.certmanager.k8s.io
-kubectl delete namespace cert-manager
+$existingHelmInstalation = helm list | grep cert-manager
+if ($null -ne $existingHelmInstalation) {
+    helm delete --purge cert-manager
+    kubectl delete crd certificates.certmanager.k8s.io
+    kubectl delete crd challenges.certmanager.k8s.io
+    kubectl delete crd clusterissuers.certmanager.k8s.io
+    kubectl delete crd issuers.certmanager.k8s.io
+    kubectl delete crd orders.certmanager.k8s.io
+    kubectl delete namespace cert-manager
+}
+
 
 LogInfo -Message "Following instruction here: https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html"
 kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
@@ -73,12 +77,12 @@ helm repo update
 helm install `
     --name cert-manager `
     --namespace cert-manager `
-    --version v0.8.1 jetstack/cert-manager `
+    --version v0.9.0-beta.0 jetstack/cert-manager `
     --set ingressShim.defaultIssuerName=letsencrypt `
     --set ingressShim.defaultIssuerKind=ClusterIssuer `
     --set ingressShim.defaultACMEChallengeType=dns01 
 
-
+<# verify 
 LogInfo -Message "Verifying cert-manager..."
 LogInfo -Message "Waiting for helm deployment to complete..."
 Start-Sleep -Seconds 15
@@ -92,18 +96,19 @@ LogInfo -Message "Removing test cert, secret and issuer..."
 kubectl delete Issuer example-com-issuer
 kubectl delete Certificate example-com-tls
 kubectl delete Secret example-com-tls
+#>
 
 
-LogStep -Step 3 -Message "Create cluster issuer using letsencrypt"
-$clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-prod.yaml"
-if ($null -ne $bootstrapValues.dns["letsencrypt"] -and $bootstrapValues.dns.letsencrypt.issuer -eq "staging") {
-    $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-staging.yaml"
-}
-$clusterIssuerTemplate = Get-Content $clusterIssuerTemplateFile -Raw
-$clusterIssuerTemplate = Set-YamlValues -valueTemplate $clusterIssuerTemplate -settings $bootstrapValues
-$clusterIssuerYamlFile = Join-Path $yamlsFolder "ClusterIssuer.yaml"
-$clusterIssuerTemplate | Out-File $clusterIssuerYamlFile -Encoding utf8 -Force | Out-Null
-kubectl apply -f $clusterIssuerYamlFile
+# LogStep -Step 3 -Message "Create cluster issuer using letsencrypt"
+# $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-prod.yaml"
+# if ($null -ne $bootstrapValues.dns["letsencrypt"] -and $bootstrapValues.dns.letsencrypt.issuer -eq "staging") {
+#     $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-staging.yaml"
+# }
+# $clusterIssuerTemplate = Get-Content $clusterIssuerTemplateFile -Raw
+# $clusterIssuerTemplate = Set-YamlValues -valueTemplate $clusterIssuerTemplate -settings $bootstrapValues
+# $clusterIssuerYamlFile = Join-Path $yamlsFolder "ClusterIssuer.yaml"
+# $clusterIssuerTemplate | Out-File $clusterIssuerYamlFile -Encoding utf8 -Force | Out-Null
+# kubectl apply -f $clusterIssuerYamlFile
 
 
 # LogStep -Step 4 -Message "Testing tls with sample app"

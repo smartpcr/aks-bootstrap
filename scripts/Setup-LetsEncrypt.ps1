@@ -98,14 +98,22 @@ $clusterIssuerTemplate = Get-Content $clusterIssuerTemplateFile -Raw
 $clusterIssuerTemplate = Set-YamlValues -valueTemplate $clusterIssuerTemplate -settings $bootstrapValues
 $clusterIssuerYamlFile = Join-Path $yamlsFolder "ClusterIssuer.yaml"
 $clusterIssuerTemplate | Out-File $clusterIssuerYamlFile -Encoding utf8 -Force | Out-Null
-kubectl delete clusterissuer $clusterIssuerName
-kubectl delete certificate $bootstrapValues.dns.domain
+$existingClusterIssuerFound = kubectl get clusterissuer | grep $clusterIssuerName
+if ($null -ne $existingClusterIssuerFound) {
+    kubectl delete clusterissuer $clusterIssuerName
+}
 kubectl apply -f $clusterIssuerYamlFile
 
 
 LogStep -Step 4 -Message "Deploy wildcard certificate '$($bootstrapValues.dns.sslCert)'..."
-kubectl delete secret $bootstrapValues.dns.sslCert
-kubectl delete certificate $bootstrapValues.dns.sslCert
+$existingSslSecretFound = kubectl get secret | grep $bootstrapValues.dns.sslCert
+if ($null -ne $existingSslSecretFound) {
+    kubectl delete secret $bootstrapValues.dns.sslCert
+}
+$existingCertFound = kubectl get certificate | grep $bootstrapValues.dns.domain
+if ($null -ne $existingCertFound) {
+    kubectl delete certificate $bootstrapValues.dns.domain
+}
 $wildcardCertTemplateFile = Join-Path $templatesFolder "wildcard-cert-letsencrypt.yaml"
 $wildcardCertTemplate = Get-Content $wildcardCertTemplateFile -Raw
 $wildcardCertTemplate = Set-YamlValues -ValueTemplate $wildcardCertTemplate -Settings $bootstrapValues
