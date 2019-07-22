@@ -2,8 +2,8 @@
 param(
     [string] $SrcVaultName = "int-disco-east-us",
     [string] $SrcSubscriptionName = "Compliance_Tools_Eng",
-    [string] $TgtVaultName = "xiaodong-kv",
-    [string] $TgtSubscriptionName = "Compliance_Tools_Eng"
+    [string] $TgtVaultName = "xiaodoli-kv",
+    [string] $TgtSubscriptionName = "xiaodoli"
 )
 
 function IsCertExists() {
@@ -26,6 +26,33 @@ function IsSecretExists() {
     return $null -ne $existingSecrets -and $existingSecrets.Count -gt 0
 }
 
+function SyncAdditionalSecrets() {
+    param(
+        [string] $SrcVaultName = "xiaodong-kv",
+        [string] $SrcSubscriptionName = "Compliance_Tools_Eng",
+        [string] $TgtVaultName = "xiaodoli-kv",
+        [string] $TgtSubscriptionName = "xiaodoli",
+        [string[]] $SecretNames = @("AppCenter-AKS-AADAppPwd")
+    )
+
+    LoginAzureAsUser -SubscriptionName $SrcSubscriptionName | Out-Null
+    $secrets = New-Object System.Collections.ArrayList
+    $SecretNames | ForEach-Object {
+        $secretName = $_
+        LogInfo -Message "Get secret $secretName..."
+        $secret = az keyvault secret show --vault-name $SrcVaultName --name $secretName | ConvertFrom-Json
+        $secrets.Add(@{
+                Name  = $secretName
+                Value = $secret.value
+            }) | Out-Null
+    }
+
+    LoginAzureAsUser -SubscriptionName $TgtSubscriptionName | Out-Null
+    $secrets | ForEach-Object {
+        LogInfo -Message "Set secret '$_.Name'..."
+        az keyvault secret set --vault-name $TgtVaultName --name $_.Name --value $_.Value | Out-Null
+    }
+}
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
@@ -50,6 +77,7 @@ if (-not (Test-Path $yamlsFolder)) {
     New-Item $yamlsFolder -ItemType Directory -Force | Out-Null
 }
 Import-Module (Join-Path $moduleFolder "common2.psm1") -Force
+SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
 LoginAzureAsUser -SubscriptionName $SrcSubscriptionName | Out-Null
 
 
@@ -85,22 +113,27 @@ $allCerts | ForEach-Object {
 
 Write-Host "3. Downloading all secrets..." -ForegroundColor White
 $downloadedSecrets = New-Object System.Collections.ArrayList
-$allSecrets = az keyvault secret list --vault-name $SrcVaultName --query "[].{id:id}" | ConvertFrom-Json
+$allSecrets = az keyvault secret list --vault-name $SrcVaultName --query "[].{id:id, enabled: attributes.enabled}" | ConvertFrom-Json
 $totalSecrets = $allSecrets.Length
 $secretsImported = 0
 $allSecrets | ForEach-Object {
     $secretId = [string]$_.id
-    $secretName = $secretId.Substring($secretId.LastIndexOf("/") + 1)
-    Write-Host "`tDownload secret '$secretName'..." -ForegroundColor Green
-    $secret = az keyvault secret show --vault-name $SrcVaultName --name $secretName | ConvertFrom-Json
-    $downloadedSecrets.Add(@{
-            Name  = $secretName
-            Value = $secret.value
-        }) | Out-Null
+    $enabled = [bool]$_.enabled
+    if ($enabled -eq $false) {
+        Write-Host "`tsecret '$secretId' is disabled"
+    }
+    else {
+        $secretName = $secretId.Substring($secretId.LastIndexOf("/") + 1)
+        Write-Host "`tDownload secret '$secretName'..." -ForegroundColor Green
+        $secret = az keyvault secret show --vault-name $SrcVaultName --name $secretName | ConvertFrom-Json
+        $downloadedSecrets.Add(@{
+                Name  = $secretName
+                Value = $secret.value
+            }) | Out-Null
 
-    #
+        Write-Host "`tImported $secretsImported of $totalSecrets..." -ForegroundColor White
+    }
     $secretsImported++
-    Write-Host "`tImported $secretsImported of $totalSecrets..." -ForegroundColor White
 }
 
 $secretsJsonFile = Join-Path $yamlsFolder "secrets.json"
