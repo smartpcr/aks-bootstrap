@@ -7,6 +7,11 @@ global:
   productName: "devspace"
   productShortName: "space"
   resourceGroup: "azds-rg"
+  components:
+    cosmosdb:
+      docDb: true
+      mongoDb: false
+      graphDb: false
 kv:
   name: xiaodoli-kv
   resourceGroup: "azds-rg"
@@ -17,13 +22,35 @@ aks:
   aksDnsPrefix: xiaodoli
   aksOwnerAadUpn: xiaodoli.onmicrosoft.com
   purpose: devspace
-  clusterName: "xiaodoli-azds-k8s-dev"
+  clusterName: "xiaodoli-aks-dev"
   resourceGroup: "azds-rg"
   vmSize: Standard_D4s_v3
   servicePrincipal: "App Center AKS AAD (non-production)"
   servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
   forceResetSpn: false
   clientAppName: "App Center AKS (non-production)"
+  access:
+    readers:
+      - name: "Compliance Tooling Team"
+        type: group
+    contributors:
+      - name: "1cs dri"
+        type: group
+    owners:
+      - name: xiaodoli@microsoft.com
+        type: user
+  certs:
+    - name: KeyVault-Certificate
+    - name: Ssl-Certificate
+    - name: Ssl-Aks-Default-Certificate
+    - name: Geneva-Certificate
+      type: geneva
+    - name: KustoIngestion-Certificate
+    - name: Api-Gateway-Ssl-Certificate
+    - name: AppCenterSsl-Certificate
+    - name: IngestionSsl-Certificate
+    - name: Oauth-Token-Storage-Ssl-Certificate
+
 servicebus:
   resourceGroup: "azds-rg"
 terraform:
@@ -39,5 +66,6 @@ cosmosDb:
    resourceGroup: "azds-rg"
 dns:
   resourceGroup: "azds-rg"
+  domain: "{{ .Values.global.envName }}.xiaodong.world"
 trafficManager:
   resourceGroup: "azds-rg"
