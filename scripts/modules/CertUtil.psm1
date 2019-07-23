@@ -167,7 +167,6 @@ function Initialize-BouncyCastleSupport {
     [System.Reflection.Assembly]::LoadFile($bouncyCastleDllPath) | Out-Null
 }
 
-
 function New-WildcardSslCert() {
     param(
         [string] $domainName,
@@ -246,5 +245,76 @@ type: Opaque
     }
     else {
         LogInfo -Message "ssl cert '$CertSecret' is already created."
+    }
+}
+
+function NewWildCardSslCertUsingAcme() {
+    param(
+        [string]$SubscriptionId,
+        [string]$TenantId,
+        [string]$ClientId,
+        [string]$ClientSecret,
+        [string]$Domain,
+        [string]$VaultName,
+        [string]$SslCertSecretName,
+        [string[]]$K8sNamespaces,
+        [string]$YamlsFolder
+    )
+
+    # TODO: run this in docker
+    $acmesh = "~/.acme.sh/acme.sh"
+
+    $certOutputFolder = "~/.acme.sh/$($Domain)"
+    $shellContent = New-Object System.Text.StringBuilder
+
+    $shellContent.AppendLine("export AZUREDNS_SUBSCRIPTIONID=`"$($SubscriptionId)`"") | Out-Null
+    $shellContent.AppendLine("export AZUREDNS_TENANTID=`"$($TenantId)`"") | Out-Null
+    $shellContent.AppendLine("export AZUREDNS_APPID=`"$($ClientId)`"") | Out-Null
+    $shellContent.AppendLine("export AZUREDNS_CLIENTSECRET=`"$($ClientSecret)`"") | Out-Null
+    $shellContent.AppendLine("export DOMAIN=`"$($Domain)`"") | Out-Null
+    $shellContent.AppendLine("$($acmesh) --issue --dns dns_azure -d $DOMAIN --debug") | Out-Null
+    $shFile = Join-Path $YamlsFolder "acme-wildcard.sh"
+    $shellContent.ToString() | Out-File $shFile -Encoding ascii -Force | Out-Null
+    Invoke-Expression "chmod +x $shFile"
+    Invoke-Expression "bash $shFile"
+
+    $crtFile = Join-Path $certOutputFolder "$($Domain).cer"
+    $keyFile = Join-Path $certOutputFolder "$($Domain).key"
+    $caFile = Join-Path $certOutputFolder "ca.cer"
+
+    $certContent = Get-Content -LiteralPath $crtFile -Raw
+    $keyContent = Get-Content -LiteralPath $keyFile -Raw
+    $caCertContent = Get-Content -LiteralPath $caFile -Raw
+
+    $sslCertSecretYaml = @"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: $($SslCertSecretName)
+    namespace: default
+data:
+    tls.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($certContent)))
+    tls.key: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($keyContent)))
+    ca.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($caCertContent)))
+type: kubernetes.io/tls
+"@
+
+    $sslCertYamlFile = Join-Path $YamlsFolder "$($SslCertSecretName).secret"
+    $sslCertSecretYaml | Out-File $sslCertYamlFile -Encoding ascii
+    az keyvault secret set --vault-name $VaultName --name $SslCertSecretName --file $sslCertYamlFile | Out-Null
+
+    $sslCertYamlSecret = az keyvault secret show --vault-name $VaultName --name $SslCertSecretName | ConvertFrom-Json
+    $sslCertYaml = $sslCertYamlSecret.value
+    $genevaSslCertYamlFile = Join-Path $YamlsFolder "$($SslCertSecretName).yaml"
+    $sslCertYaml | Out-File $genevaSslCertYamlFile -Encoding ascii
+    kubectl apply -f $genevaSslCertYamlFile
+
+    $K8sNamespaces | ForEach-Object {
+        $ns = $_
+        Write-Host "Adding secret '$SslCertSecretName' to '$($ns)'" -ForegroundColor Green
+
+        kubectl delete secret $SslCertSecretName -n $ns
+        kubectl get secret $SslCertSecretName -o yaml --export | kubectl apply --namespace $ns -f -
     }
 }

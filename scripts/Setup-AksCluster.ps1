@@ -319,7 +319,7 @@ else {
 }
 
 $aksClusterSpn = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
-if ($null -eq $aksClusterSpn -or $aksClusterSpn.Count -eq 0) {
+if ($null -eq $aksClusterSpn -or $aksClusterSpn.Count -ne 1) {
     throw "Unable to find service principal for aks cluster"
 }
 $aksClusterSpnAppId = $aksClusterSpn[0].appId
