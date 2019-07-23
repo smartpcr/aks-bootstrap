@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong"
+    [string] $SpaceName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,9 +80,9 @@ helm install `
     --version v0.9.0-beta.0 jetstack/cert-manager `
     --set ingressShim.defaultIssuerName=letsencrypt `
     --set ingressShim.defaultIssuerKind=ClusterIssuer `
-    --set ingressShim.defaultACMEChallengeType=dns01 
+    --set ingressShim.defaultACMEChallengeType=dns01
 
-<# verify 
+<# verify
 LogInfo -Message "Verifying cert-manager..."
 LogInfo -Message "Waiting for helm deployment to complete..."
 Start-Sleep -Seconds 15

@@ -446,11 +446,11 @@ else {
 }
 
 
-if ($bootstrapValues.aks.useCertManager) {
-    LogStep -Step 14 -Message "Setup cert-manager..."
-    & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
-    & "$scriptFolder\Setup-LetsEncrypt.ps1" -EnvName $EnvName -SpaceName $SpaceName
-}
+# if ($bootstrapValues.aks.useCertManager) {
+#     LogStep -Step 14 -Message "Setup cert-manager..."
+#     & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
+#     & "$scriptFolder\Setup-LetsEncrypt.ps1" -EnvName $EnvName -SpaceName $SpaceName
+# }
 
 
 LogStep -Step 15 -Message "Setup monitoring infrastructure..."

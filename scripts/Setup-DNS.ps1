@@ -41,8 +41,8 @@ $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscrip
 $aks = az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName | ConvertFrom-Json
 $bootstrapValues.aks["fqdn"] = $aks.fqdn
 
-LogStep -Step 2 -Message "Make sure nginx is deployed, which is required by external-dns"
 
+LogStep -Step 2 -Message "Make sure nginx is deployed, which is required by external-dns"
 LogInfo -Message "Create K8S secret for docker registry in namespace 'ingress-nginx'..."
 $acr = az acr show -g $bootstrapValues.acr.resourceGroup -n $bootstrapValues.acr.name | ConvertFrom-Json
 az acr login -n $bootstrapValues.acr.name
@@ -107,19 +107,19 @@ LogStep -Step 4 -Message "Add CAA record to allow letsencrypt perform authorizat
 $caaRecords = az network dns record-set caa list `
     --resource-group $bootstrapValues.dns.resourceGroup `
     --zone-name $bootstrapValues.dns.domain | ConvertFrom-Json
-$letsencryptCaaRecord = $caaRecords | Where-Object { $_.name -eq "letsencrypt" }
+$letsencryptCaaRecord = $caaRecords | Where-Object { $_.name -eq $bootstrapValues.global.envName }
 if ($null -eq $letsencryptCaaRecord) {
     LogInfo -Message "Adding caa record 'letsencrypt'..."
     az network dns record-set caa add-record `
         -g $bootstrapValues.dns.resourceGroup `
         -z $bootstrapValues.dns.domain `
-        -n "letsencrypt" `
+        -n $bootstrapValues.global.envName `
         --flags 0 `
         --tag "issue" `
         --value "letsencrypt.org" | Out-Null
 }
 else {
-    LogInfo -Message "Caa record 'letsencrypt' already added."
+    LogInfo -Message "Caa record '$($bootstrapValues.global.envName)' already added."
 }
 
 
@@ -128,9 +128,9 @@ $existingAssignments = az role assignment list --role "Reader" --assignee $aksCl
 if ($existingAssignments.Count -eq 0) {
     az role assignment create --role "Reader" --assignee $aksClusterSpn.appId --scope $dnsRg.id | Out-Null
 }
-$existingAssignments = az role assignment list --role "Contributor" --assignee $aksClusterSpn.appId --scope $dnsZone.id | ConvertFrom-Json
+$existingAssignments = az role assignment list --role "DNS Zone Contributor" --assignee $aksClusterSpn.appId --scope $dnsZone.id | ConvertFrom-Json
 if ($existingAssignments.Count -eq 0) {
-    az role assignment create --role "Contributor" --assignee $aksClusterSpn.appId --scope $dnsZone.id | Out-Null
+    az role assignment create --role "DNS Zone Contributor" --assignee $aksClusterSpn.appId --scope $dnsZone.id | Out-Null
 }
 
 
