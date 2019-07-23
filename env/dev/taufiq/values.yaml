@@ -42,6 +42,9 @@ aks:
     owners:
       - name: tamal@microsoft.com
         type: user
+cosmosdb:
+  docDb:
+    account: "taufiq-docdb"
 servicebus:
   resourceGroup: "taufiq-rg"
 terraform:
