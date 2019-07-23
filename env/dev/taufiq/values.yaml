@@ -45,6 +45,7 @@ aks:
 
 servicebus:
   resourceGroup: "taufiq-rg"
+  name: "taufiq-servicebus"
 terraform:
   resourceGroup: "taufiq-rg"
 appInsights:
@@ -64,4 +65,5 @@ dns:
 trafficManager:
   resourceGroup: "taufiq-rg"
 redis:
+  name: "taufiq-redis"
   resourceGroup: "taufiq-rg"
