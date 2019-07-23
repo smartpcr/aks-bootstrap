@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "taufiq"
+    [string] $SpaceName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -59,13 +59,30 @@ $sshKeyData = Get-Content $aksCertPublicKeyFile
 
 
 LogStep -Step 3 -Message "Ensure AKS cluster '$($bootstrapValues.aks.clusterName)' within resource group '$($bootstrapValues.aks.resourceGroup)' is created..."
-LogInfo -Message "this would take 10 - 30 min, Go grab a coffee"
+
 # az aks delete `
 #     --resource-group $bootstrapValues.aks.resourceGroup `
 #     --name $bootstrapValues.aks.clusterName --yes
-$aksClusters = az aks list --resource-group $bootstrapValues.aks.resourceGroup --query "[?name == '$($bootstrapValues.aks.clusterName)']" | ConvertFrom-Json
+$aksClusters = az aks list `
+    --resource-group $bootstrapValues.aks.resourceGroup `
+    --query "[?name == '$($bootstrapValues.aks.clusterName)']" | ConvertFrom-Json
+
 if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
     LogInfo -Message "Creating AKS Cluster '$($bootstrapValues.aks.clusterName)'..."
+    $aksClusterServicePrincipals = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+    if ($null -ne $aksClusterServicePrincipals -and $aksClusterServicePrincipals.Count -gt 0) {
+        Write-Warning "Service principal '$($bootstrapValues.aks.clusterName)' already created, but aks cluster is not."
+        $removeServicePrincipal = Read-Host "Removing existing orphaned service principal (y/N)?"
+        if ($removeServicePrincipal -ieq "Y") {
+            $aksClusterServicePrincipals | ForEach-Object {
+                $existingSpnAppId = $_.appId
+                LogInfo -Message "Removing service principal '$($bootstrapValues.aks.clusterName)' ($($existingSpnAppId))"
+                az ad sp delete --id $existingSpnAppId | Out-Null
+            }
+        }
+    }
+
+    LogInfo -Message "AKS cluster creation started, this would take 10 - 30 min, Go grab a coffee"
 
     $currentUser = $env:USERNAME
     if (!$currentUser) {
@@ -106,7 +123,7 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         Get-Content $terraformVarFile -Raw | ConvertFrom-Yaml2 -Ordered
         #TODO: implement teraform install
     }
-    az aks create `
+    $aks = az aks create `
         --resource-group $bootstrapValues.aks.resourceGroup `
         --name $bootstrapValues.aks.clusterName `
         --kubernetes-version $bootstrapValues.aks.version `
@@ -120,18 +137,30 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         --aad-server-app-secret $aksSpnPwd `
         --aad-client-app-id $aksClientApp.appId `
         --aad-tenant-id $azAccount.tenantId `
-        --tags $tags | Out-Null
+        --tags $tags | ConvertFrom-Json
+
+    LogInfo -Message "AKS cluster is created: $($aks.id)"
+    LogInfo -Message ($aks | ConvertTo-Json)
+
+    $aksCluster = az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+    if ($null -eq $aksCluster) {
+        throw "Failed to create aks cluster '$($bootstrapValues.aks.clusterName)'"
+    }
+    else {
+        LogInfo -Message "Successfully created aks cluster '$($bootstrapValues.aks.clusterName)'"
+    }
 }
 else {
     LogInfo -Message "AKS cluster '$($bootstrapValues.aks.clusterName)' is already created."
 }
 
 
-# LogStep -Step 4 -Message "Reset aks cluster spn password..."
-# $aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
-# $aksClusterSpnPwd = $(az ad sp credential reset --name $aksClusterSpnClientId --query password -o tsv)
-# $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
-# az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd
+LogStep -Step 4 -Message "Manually add aks cluster spn client secret..."
+$aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
+$aksClusterSpnPwd = Read-Host "Enter password for service principal $($aksClusterSpnClientId): '$($bootstrapValues.aks.clusterName)'"
+$aksClusterSpnPwd = $aksClusterSpnPwd.Replace("-", "`-").Replace("$","`$")
+$aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd | Out-Null
 
 
 <#
@@ -290,7 +319,7 @@ else {
 }
 
 $aksClusterSpn = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
-if ($null -eq $aksClusterSpn -or $aksClusterSpn.Count -eq 0) {
+if ($null -eq $aksClusterSpn -or $aksClusterSpn.Count -ne 1) {
     throw "Unable to find service principal for aks cluster"
 }
 $aksClusterSpnAppId = $aksClusterSpn[0].appId
@@ -417,11 +446,11 @@ else {
 }
 
 
-if ($bootstrapValues.aks.useCertManager) {
-    LogStep -Step 14 -Message "Setup cert-manager..."
-    & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
-    & "$scriptFolder\Setup-LetsEncrypt.ps1" -EnvName $EnvName -SpaceName $SpaceName
-}
+# if ($bootstrapValues.aks.useCertManager) {
+#     LogStep -Step 14 -Message "Setup cert-manager..."
+#     & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
+#     & "$scriptFolder\Setup-LetsEncrypt.ps1" -EnvName $EnvName -SpaceName $SpaceName
+# }
 
 
 LogStep -Step 15 -Message "Setup monitoring infrastructure..."

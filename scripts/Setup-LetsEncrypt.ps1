@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong"
+    [string] $SpaceName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -110,9 +110,9 @@ $existingSslSecretFound = kubectl get secret | grep $bootstrapValues.dns.sslCert
 if ($null -ne $existingSslSecretFound) {
     kubectl delete secret $bootstrapValues.dns.sslCert
 }
-$existingCertFound = kubectl get certificate | grep $bootstrapValues.dns.domain
+$existingCertFound = kubectl get certificate | grep $bootstrapValues.dns.sslCert
 if ($null -ne $existingCertFound) {
-    kubectl delete certificate $bootstrapValues.dns.domain
+    kubectl delete certificate $bootstrapValues.dns.sslCert
 }
 $wildcardCertTemplateFile = Join-Path $templatesFolder "wildcard-cert-letsencrypt.yaml"
 $wildcardCertTemplate = Get-Content $wildcardCertTemplateFile -Raw

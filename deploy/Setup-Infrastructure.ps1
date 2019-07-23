@@ -4,7 +4,9 @@ param(
     [string] $EnvName = "dev",
     [ValidateSet("rrdp", "rrdu", "aamva", "xiaodoli", "xiaodong", "comp", "kojamroz", "taufiq")]
     [string] $SpaceName = "xiaodoli",
-    [bool] $IsLocal = $false
+    [bool] $IsLocal = $false,
+    [switch] $SyncKeyVault,
+    [switch] $SyncAcr
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,10 +41,12 @@ else {
     LogStep -Step 2 -Message "Creating service principals..."
     & $scriptFolder\Setup-ServicePrincipal.ps1 -EnvName $EnvName -SpaceName $SpaceName
 
-    LogStep -Step 3 -Message "Synchronize key vault certs and secrets..."
-    & $scriptFolder\Sync-KeyVault.ps1 `
-        -TgtSubscriptionName $bootstrapValues.global.subscriptionName `
-        -TgtVaultName $bootstrapValues.kv.name
+    if ($SyncKeyVault) {
+        LogStep -Step 3 -Message "Synchronize key vault certs and secrets..."
+        & $scriptFolder\Sync-KeyVault.ps1 `
+            -TgtSubscriptionName $bootstrapValues.global.subscriptionName `
+            -TgtVaultName $bootstrapValues.kv.name
+    }
 
     if ($bootstrapValues.global.components.terraform) {
         LogStep -Step 4 -Message "Setup terraform..."
@@ -53,8 +57,10 @@ else {
         LogStep -Step 5 -Message "Bootstrap ACR..."
         & $scriptFolder\Setup-ContainerRegistry.ps1 -EnvName $EnvName -SpaceName $SpaceName
 
-        LogStep -Step 6 -Message "Sync ACR..."
-        & $scriptFolder\Sync-AcrRepos.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        if ($SyncAcr) {
+            LogStep -Step 6 -Message "Sync ACR..."
+            & $scriptFolder\Sync-AcrRepos.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        }
     }
 
     if ($bootstrapValues.global.components.aks) {

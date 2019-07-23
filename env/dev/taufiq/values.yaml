@@ -42,8 +42,10 @@ aks:
     owners:
       - name: tamal@microsoft.com
         type: user
+
 servicebus:
   resourceGroup: "taufiq-rg"
+  name: "taufiq-servicebus"
 terraform:
   resourceGroup: "taufiq-rg"
 appInsights:
@@ -51,15 +53,17 @@ appInsights:
 cosmosDb:
   docDb:
    resourceGroup: "taufiq-rg"
+   account: "taufiq-docdb"
   graphDb:
    resourceGroup: "taufiq-rg"
   mongoDb:
    resourceGroup: "taufiq-rg"
 dns:
   resourceGroup: "taufiq-rg"
-  domain: "hack19.myk8s.dev"
+  domain: "myk8s.dev"
   sslCert: "sslcert-hack19-myk8s-dev"
 trafficManager:
   resourceGroup: "taufiq-rg"
 redis:
+  name: "taufiq-redis"
   resourceGroup: "taufiq-rg"

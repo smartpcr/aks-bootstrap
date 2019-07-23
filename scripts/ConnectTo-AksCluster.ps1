@@ -1,6 +1,6 @@
 param(
     [string] $EnvName = "dev",
-    [string] $SpaceName = "rrdu",
+    [string] $SpaceName = "taufiq",
     [switch] $AsAdmin,
     [switch] $ShowDashboard,
     [switch] $UseProxy,
@@ -39,7 +39,7 @@ if ($ShowDashboard) {
     Write-Host "Browse aks dashboard..." -ForegroundColor Green
     Write-Host "Make sure AKS cluster AAD app ($($bootstrapValues.aks.servicePrincipal)) required permission is granted" -ForegroundColor Yellow
     Write-Host "Make sure AKS client AAD app ($($bootstrapValues.aks.clientAppName)) required permission is granted" -ForegroundColor Yellow
-    
+
     $isMac = $PSVersionTable.Contains("Platform") -and ($PSVersionTable.OS.Contains("Darwin"))
     if ($isMac) {
         if ($UseProxy) {

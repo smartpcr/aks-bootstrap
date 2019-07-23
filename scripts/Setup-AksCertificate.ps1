@@ -35,7 +35,7 @@ LogTitle -Message "Install certificates for environment '$EnvName'..."
 
 LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
-LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
+$azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
@@ -134,22 +134,47 @@ type: Opaque
 
 LogStep -Step 3 -Message "Ensure ssl wildcard cert is create and deployed to k8s"
 $sslCertSecret = $bootstrapValues.dns.sslCert
-$sslCertYamlSecret = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $sslCertSecret | ConvertFrom-Json
-if (!$sslCertYamlSecret) {
-    $certSubject = "/C=$($bootstrapValues.dns.country)/ST=$($bootstrapValues.dns.state)/L=$($bootstrapValues.dns.city)/O=$($bootstrapValues.dns.organization)/CN=*.$($bootstrapValues.dns.domain)"
-    New-WildcardSslCert -domainName $bootstrapValues.dns.domain -Subject $certSubject -CertSecret $sslCertSecret -YamlsFolder $yamlsFolder -VaultName $bootstrapValues.kv.name
-    $sslCertYamlSecret = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $sslCertSecret | ConvertFrom-Json
-}
-$sslCertYaml = $sslCertYamlSecret.value
+$wildCardDomain = "*.$($bootstrapValues.dns.domain)"
 
-# [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($certContent))
-$genevaSslCertYamlFile = Join-Path $yamlsFolder "$($sslCertSecret).yaml"
-$sslCertYaml | Out-File $genevaSslCertYamlFile -Encoding ascii
-kubectl apply -f $genevaSslCertYamlFile
-
-LogInfo -Message "Install ssl cert to other namespaces..."
-$otherK8sNamespaces = @("azds", $SpaceName, "monitoring")
-$otherK8sNamespaces | ForEach-Object {
-    $ns = $_
-    kubectl get secret $sslCertSecret -o yaml --export | kubectl apply --namespace $ns -f -
+[array]$aksClusterSpns = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+if ($null -eq $aksClusterSpns -or $aksClusterSpns.Count -ne 1) {
+    throw "Unable to find service principal for aks cluster"
 }
+$aksClusterSpn = $aksClusterSpns[0]
+$aksClusterSpnPwdSecretName = "$($bootstrapValues.aks.clusterName)-password"
+$aksClusterSpnSecret = az keyvault secret show `
+    --vault-name $bootstrapValues.kv.name `
+    --name $aksClusterSpnPwdSecretName | ConvertFrom-Json
+$aksClusterSpnPwd = $aksClusterSpnSecret.value
+
+NewWildCardSslCertUsingAcme `
+    -SubscriptionId $azAccount.id `
+    -TenantId $azAccount.tenantId `
+    -ClientId $aksClusterSpn.appId `
+    -ClientSecret $aksClusterSpnPwd `
+    -Domain $wildCardDomain `
+    -VaultName $bootstrapValues.kv.name `
+    -SslCertSecretName $sslCertSecret `
+    -K8sNamespaces @($SpaceName, "monitoring") `
+    -YamlsFolder $yamlsFolder
+
+
+# $sslCertYamlSecret = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $sslCertSecret | ConvertFrom-Json
+# if (!$sslCertYamlSecret) {
+#     $certSubject = "/C=$($bootstrapValues.dns.country)/ST=$($bootstrapValues.dns.state)/L=$($bootstrapValues.dns.city)/O=$($bootstrapValues.dns.organization)/CN=*.$($bootstrapValues.dns.domain)"
+#     New-WildcardSslCert -domainName $bootstrapValues.dns.domain -Subject $certSubject -CertSecret $sslCertSecret -YamlsFolder $yamlsFolder -VaultName $bootstrapValues.kv.name
+#     $sslCertYamlSecret = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $sslCertSecret | ConvertFrom-Json
+# }
+# $sslCertYaml = $sslCertYamlSecret.value
+
+# # [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($certContent))
+# $genevaSslCertYamlFile = Join-Path $yamlsFolder "$($sslCertSecret).yaml"
+# $sslCertYaml | Out-File $genevaSslCertYamlFile -Encoding ascii
+# kubectl apply -f $genevaSslCertYamlFile
+
+# LogInfo -Message "Install ssl cert to other namespaces..."
+# $otherK8sNamespaces = @("azds", $SpaceName, "monitoring")
+# $otherK8sNamespaces | ForEach-Object {
+#     $ns = $_
+#     kubectl get secret $sslCertSecret -o yaml --export | kubectl apply --namespace $ns -f -
+# }

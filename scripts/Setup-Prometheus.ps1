@@ -44,8 +44,7 @@ $monitoringNamespaceYaml = Join-Path $yamlsFolder "monitoringNamespaceYaml.yaml"
 $nsMonitorYaml | Out-File $monitoringNamespaceYaml -Encoding utf8
 kubectl apply -f $monitoringNamespaceYaml
 
-
-kubectl get secret $bootstrapValues.dns.sslCert -o yaml --export | kubectl apply --namespace monitoring -f -
+# kubectl get secret $bootstrapValues.dns.sslCert -o yaml --export | kubectl apply --namespace monitoring -f -
 
 $prometheusTemplateFile = Join-Path $templatesFolder "prometheus-ingress.yaml"
 $prometheusTemplate = Get-Content $prometheusTemplateFile -Raw
@@ -61,11 +60,11 @@ if ($null -ne $existingDeployment) {
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
     kubectl delete crd podmonitors.monitoring.coreos.com
-    kubectl delete namespace monitoring 
+    kubectl delete namespace monitoring
 
     LogInfo -Message "Waiting resource to be cleaned up..."
-    Start-Sleep -Seconds 10 
+    Start-Sleep -Seconds 10
 }
 
-helm install --namespace monitoring --name prometheus -f $prometheusYamlFile stable/prometheus-operator
+helm install --namespace monitoring --name prometheus --version "6.0.0" -f $prometheusYamlFile stable/prometheus-operator
 

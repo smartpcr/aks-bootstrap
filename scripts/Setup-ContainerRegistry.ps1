@@ -69,7 +69,7 @@ az acr update -n $acrName --admin-enabled true | Out-Null
 LogStep -Step 5 -Message "Save ACR password with name '$acrPwdSecretName' to KV '$vaultName'"
 LogInfo -Message "Make sure docker is running"
 # docker kill $(docker ps -q)
-$acrUsername=$acrName
+$acrUsername = $acrName
 $acrPassword = "$(az acr credential show -n $acrName --query ""passwords[0].value"")"
 LogInfo -Message "ACR: '$acrName', user: $acrUsername, password: ***"
 LogInfo -Message "Store acr password to key vault '$vaultName' with name '$acrPwdSecretName'"
