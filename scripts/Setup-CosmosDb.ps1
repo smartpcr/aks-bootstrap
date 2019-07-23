@@ -1,7 +1,7 @@
 
 param(
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong",
+    [string] $SpaceName = "taufiq",
     [bool] $RecreateCollections = $false
 )
 
@@ -101,7 +101,7 @@ $cosmosDbSettings | ForEach-Object {
         if ($RecreateCollections) {
             $cosmosDbSetting.Collections | ForEach-Object {
                 $collectionName = $_.name
-                
+
                 DeleteCollection `
                     -AccountName $cosmosDbSetting.AccountName `
                     -ResourceGroupName $cosmosDbSetting.ResourceGroup `
