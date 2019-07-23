@@ -271,14 +271,26 @@ function LoginAzureAsUser {
     return $currentAccount
 }
 
-function LoginRmSubscription {
+function LoginAsServicePrincipal {
     param (
-        [string]$SubscriptionName
+        [string] $EnvName = "dev",
+        [string] $SpaceName = "xiaodoli",
+        [string] $EnvRootFolder
     )
 
-    $context = Get-AzureRmContext
-    if (!$context -or $context.Subscription.Name -ine $SubscriptionName) {
-        Login-AzureRmAccount | Out-Null
-        Set-AzureRmContext -Subscription $Subscription | Out-Null
+    $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -SpaceName $SpaceName -EnvRootFolder $EnvRootFolder
+    $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
+    $vaultName = $bootstrapValues.kv.name
+    $spnName = $bootstrapValues.global.servicePrincipal
+    $certName = $spnName
+    $tenantId = $azAccount.tenantId
+
+    $privateKeyFilePath = "$EnvRootFolder/credential/$certName.key"
+    if (-not (Test-Path $privateKeyFilePath)) {
+        LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
+        DownloadCertFromKeyVault -VaultName $vaultName -CertName $certName -EnvRootFolder $EnvRootFolder
     }
+
+    LogInfo -Message "Login as service principal '$spnName'"
+    az login --service-principal -u "http://$spnName" -p $privateKeyFilePath --tenant $tenantId | Out-Null
 }

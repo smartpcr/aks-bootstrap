@@ -13,7 +13,7 @@ function EnsureCertificateInKeyVault {
         $credentialFolder = Join-Path $ScriptFolder "credential"
         New-Item -Path $credentialFolder -ItemType Directory -Force | Out-Null
         $defaultPolicyFile = Join-Path $credentialFolder "default_policy.json"
-        az keyvault certificate get-default-policy -o json | Out-File $defaultPolicyFile -Encoding utf8 
+        az keyvault certificate get-default-policy -o json | Out-File $defaultPolicyFile -Encoding utf8
         az keyvault certificate create -n $CertName --vault-name $vaultName -p @$defaultPolicyFile | Out-Null
     }
 }
@@ -31,7 +31,7 @@ function DownloadCertFromKeyVault {
     $pemCertFile = Join-Path $credentialFolder "$certName.pem"
     $keyCertFile = Join-Path $credentialFolder "$certName.key"
 
-    LogInfo -Message "Downloading cert '$CertName' from keyvault '$VaultName' and convert it to private key" 
+    LogInfo -Message "Downloading cert '$CertName' from keyvault '$VaultName' and convert it to private key"
     az keyvault secret download --vault-name $VaultName -n $CertName -e base64 -f $pfxCertFile
     openssl pkcs12 -in $pfxCertFile -clcerts -nodes -out $keyCertFile -passin pass:
     openssl rsa -in $keyCertFile -out $pemCertFile
@@ -59,8 +59,8 @@ function EnsureSshCert {
             LogInfo -Message "SSH key password is stored in kv '$VaultName' with name '$pwdName'"
             $pwdSecret = Get-OrCreatePasswordInVault2 -VaultName $VaultName -SecretName $pwdName
             LogInfo -Message "Generating ssh key for linux vm in AKS cluster..."
-            ssh-keygen -f $certFile -P $pwdSecret.value 
-            
+            ssh-keygen -f $certFile -P $pwdSecret.value
+
             LogInfo -Message "Put ssh private key '$CertName' to keyvault '$VaultName'"
             $certPrivateString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($certFile))
             az keyvault secret set --vault-name $VaultName --name $CertName --value $certPrivateString | Out-Null

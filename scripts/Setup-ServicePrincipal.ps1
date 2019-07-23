@@ -10,7 +10,7 @@
 #>
 param(
     [string] $EnvName = "dev",
-    [string] $SpaceName
+    [string] $SpaceName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -76,7 +76,6 @@ else {
 if ($bootstrapValues.global.components.aks -eq $true) {
     LogStep -Step 3 -Message "Ensuring AKS service principal '$($bootstrapValues.aks.servicePrincipal)' is created..."
     az group create --name $bootstrapValues.aks.resourceGroup --location $bootstrapValues.aks.location | Out-Null
-    $aksrg = az group show --name $bootstrapValues.aks.resourceGroup | ConvertFrom-Json
 
     Get-OrCreateAksServicePrincipal `
         -ServicePrincipalName $bootstrapValues.aks.servicePrincipal `
@@ -123,5 +122,5 @@ if ($bootstrapValues.global.components.aks -eq $true) {
 }
 
 # connect as service principal
-# LoginAsServicePrincipal -EnvName $EnvName -ScriptFolder $envRootFolder
+LoginAsServicePrincipal -EnvName $EnvName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
 LogTitle "Remember to manually grant aad app request before creating aks cluster!"
