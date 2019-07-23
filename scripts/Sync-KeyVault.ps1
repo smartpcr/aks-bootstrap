@@ -136,7 +136,7 @@ $allSecrets | ForEach-Object {
                 Value = $secret.value
             }) | Out-Null
 
-        Write-Host "`tImported $secretsImported of $totalSecrets..." -ForegroundColor White
+        Write-Host "`Exported $secretsImported of $totalSecrets..." -ForegroundColor White
     }
     $secretsImported++
 }

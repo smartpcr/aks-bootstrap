@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong"
+    [string] $SpaceName = "taufiq"
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,7 +34,7 @@ LogTitle -Message "Install certificates for environment '$EnvName'..."
 
 
 LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
-$bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName 
+$bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
