@@ -58,7 +58,7 @@ cosmosDb:
 dns:
   resourceGroup: "taufiq-rg"
   domain: "hack19.myk8s.dev"
-  sslCert: ""sslcert-hack19-myk8s-dev"
+  sslCert: "sslcert-hack19-myk8s-dev"
 trafficManager:
   resourceGroup: "taufiq-rg"
 redis:
