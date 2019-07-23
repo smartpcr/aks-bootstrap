@@ -25,6 +25,8 @@ aks:
   clusterName: "xiaodoli-aks-dev"
   resourceGroup: "azds-rg"
   vmSize: Standard_D4s_v3
+  nodeCount: 2
+  version: "1.13.7"
   servicePrincipal: "App Center AKS AAD (non-production)"
   servicePrincipalPassword: "AppCenter-AKS-AADAppPwd"
   forceResetSpn: false

@@ -121,6 +121,14 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         --aad-client-app-id $aksClientApp.appId `
         --aad-tenant-id $azAccount.tenantId `
         --tags $tags | Out-Null
+
+    $askCluster = az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+    if ($null -eq $aksCluster) {
+        throw "Failed to create aks cluster '$($bootstrapValues.aks.clusterName)'"
+    }
+    else {
+        LogInfo -Message "Successfully created aks cluster '$($bootstrapValues.aks.clusterName)'"
+    }
 }
 else {
     LogInfo -Message "AKS cluster '$($bootstrapValues.aks.clusterName)' is already created."
