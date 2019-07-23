@@ -44,8 +44,7 @@ $monitoringNamespaceYaml = Join-Path $yamlsFolder "monitoringNamespaceYaml.yaml"
 $nsMonitorYaml | Out-File $monitoringNamespaceYaml -Encoding utf8
 kubectl apply -f $monitoringNamespaceYaml
 
-
-kubectl get secret $bootstrapValues.dns.sslCert -o yaml --export | kubectl apply --namespace monitoring -f -
+# kubectl get secret $bootstrapValues.dns.sslCert -o yaml --export | kubectl apply --namespace monitoring -f -
 
 $prometheusTemplateFile = Join-Path $templatesFolder "prometheus-ingress.yaml"
 $prometheusTemplate = Get-Content $prometheusTemplateFile -Raw
