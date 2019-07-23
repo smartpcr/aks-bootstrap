@@ -127,11 +127,11 @@ else {
 }
 
 
-LogStep -Step 4 -Message "Reset aks cluster spn password..."
-$aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
-$aksClusterSpnPwd = $(az ad sp credential reset --name $aksClusterSpnClientId --query password -o tsv)
-$aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
-az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd
+# LogStep -Step 4 -Message "Reset aks cluster spn password..."
+# $aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
+# $aksClusterSpnPwd = $(az ad sp credential reset --name $aksClusterSpnClientId --query password -o tsv)
+# $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+# az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd
 
 
 <#

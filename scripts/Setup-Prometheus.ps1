@@ -62,6 +62,9 @@ if ($null -ne $existingDeployment) {
     kubectl delete crd servicemonitors.monitoring.coreos.com
     kubectl delete crd podmonitors.monitoring.coreos.com
     kubectl delete namespace monitoring 
+
+    LogInfo -Message "Waiting resource to be cleaned up..."
+    Start-Sleep -Seconds 10 
 }
 
 helm install --namespace monitoring --name prometheus -f $prometheusYamlFile stable/prometheus-operator

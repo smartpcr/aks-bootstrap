@@ -70,3 +70,5 @@ dns:
   sslCert: "sslcert-dev-xiaodong-cloud"
 trafficManager:
   resourceGroup: "azds-rg"
+redis:
+  resourceGroup: "azds-rg"
