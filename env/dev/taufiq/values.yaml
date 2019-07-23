@@ -25,7 +25,7 @@ aks:
   purpose: devspace
   clusterName: "taufiq-azds-dev"
   resourceGroup: "taufiq-rg"
-  version: "1.14.0"
+  version: "1.13.7"
   vmSize: Standard_D4s_v3
   nodeCount: 2
   servicePrincipal: "App Center AKS AAD (non-production)"
