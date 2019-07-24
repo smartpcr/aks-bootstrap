@@ -74,6 +74,7 @@ namespace bootstrap.client.Collector
                     if(!registry.GetQueryNodeById(pid).Answer.Equals(condition[pid]))
                     {
                         //register pending dependents
+                        //when supporting queries depending on multiple parents's answers
                         break;
                     }
                     q.Enqueue(child);
