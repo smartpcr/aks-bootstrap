@@ -1,5 +1,6 @@
 using bootstrap.client.Collector;
 using bootstrap.client.Data;
+using bootstrap.client.Extensions;
 using bootstrap.client.Interfaces;
 using bootstrap.client.Readers;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,18 +14,21 @@ namespace bootstrap.client
 {
     public class Program
     {
-        private readonly string fileName;
+        private readonly string inFileName;
+        private readonly string outFileName;
         private readonly IQueryReader reader;
         private readonly IQueryRegistry registry;
         private readonly IAnswerCollector collector;
 
-        public Program(string fileName,
+        public Program(string inFileName,
+            string outFileName,
             IQueryReader reader,
             IQueryRegistry registry,
             IAnswerCollector collector
            )
         {
-            this.fileName = fileName;
+            this.inFileName = inFileName;
+            this.outFileName = outFileName;
             this.reader = reader;
             this.registry = registry;
             this.collector = collector;
@@ -32,7 +36,7 @@ namespace bootstrap.client
 
         public async Task<Program> ReadQueriesAsync()
         {
-            var queryNodes = await reader.ReadQueryNodesAsync(fileName);
+            var queryNodes = await reader.ReadQueryNodesAsync(inFileName);
             foreach(var node in queryNodes)
             {
                 registry.RegisterNode(node);
@@ -46,30 +50,46 @@ namespace bootstrap.client
             return await Task.FromResult(this);
         }
 
+        public async Task<Program> WriteCollectedAnswers()
+        {
+            await registry.WriteAync(outFileName);
+            return this;
+        }
+
         public static void Main(string[] args)
         {
-            var fileName = GetFileName(args);
+            var appInput = GetInput(args);
+            var inputFileName = appInput.InputFileName;
+            var outputFileName = appInput.OutFileName;
             var serviceProvider = ConfigureApplication();
-            new Program(fileName,
+            new Program(inputFileName, outputFileName,
                 serviceProvider.GetRequiredService<IQueryReader>(),
                 serviceProvider.GetRequiredService<IQueryRegistry>(),
                 serviceProvider.GetRequiredService<IAnswerCollector>())
                 .ReadQueriesAsync().GetAwaiter().GetResult()
-                .CollectAnswersAsync().GetAwaiter().GetResult();
+                .CollectAnswersAsync().GetAwaiter().GetResult()
+                .WriteCollectedAnswers().GetAwaiter().GetResult();
         }
 
-        private static string GetFileName(string[] args)
+        private static AppInput GetInput(string[] args)
         {
-            if(args.Length == 0)
+            if(args.Length < 2)
             {
-                throw new InvalidOperationException("No file supplied");
+                throw new InvalidOperationException("No sufficient args supplied");
             }
-            var fileName = args[0];
-            if(!File.Exists(fileName))
+            var inFile = args[0];
+            if(!File.Exists(inFile))
             {
                 throw new ArgumentException("Supplied file doesn't exits");
             }
-            return fileName;
+            var outFile = args[1];
+            var location = Path.GetDirectoryName(outFile);
+            
+            if (!Directory.Exists(location))
+            {
+                throw new ArgumentException("Invalid output file supplied");
+            }
+            return new AppInput(inFile, outFile);
         }
 
         private static IServiceProvider ConfigureApplication()
