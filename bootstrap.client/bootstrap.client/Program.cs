@@ -19,12 +19,14 @@ namespace bootstrap.client
         private readonly IQueryReader reader;
         private readonly IQueryRegistry registry;
         private readonly IAnswerCollector collector;
+        private readonly ILogger<Program> logger;
 
         public Program(string inFileName,
             string outFileName,
             IQueryReader reader,
             IQueryRegistry registry,
-            IAnswerCollector collector
+            IAnswerCollector collector,
+            ILogger<Program> logger
            )
         {
             this.inFileName = inFileName;
@@ -32,6 +34,7 @@ namespace bootstrap.client
             this.reader = reader;
             this.registry = registry;
             this.collector = collector;
+            this.logger = logger;
         }
 
         public async Task<Program> ReadQueriesAsync()
@@ -47,12 +50,14 @@ namespace bootstrap.client
         public async Task<Program> CollectAnswersAsync()
         {
             collector.Collect();
+            logger.LogInformation("Finished collecting all answers .. ");
             return await Task.FromResult(this);
         }
 
         public async Task<Program> WriteCollectedAnswers()
         {
             await registry.WriteAync(outFileName);
+            logger.LogInformation($"Finished writing values json in {outFileName} ..");
             return this;
         }
 
@@ -65,7 +70,8 @@ namespace bootstrap.client
             new Program(inputFileName, outputFileName,
                 serviceProvider.GetRequiredService<IQueryReader>(),
                 serviceProvider.GetRequiredService<IQueryRegistry>(),
-                serviceProvider.GetRequiredService<IAnswerCollector>())
+                serviceProvider.GetRequiredService<IAnswerCollector>(),
+                serviceProvider.GetService<ILogger<Program>>())
                 .ReadQueriesAsync().GetAwaiter().GetResult()
                 .CollectAnswersAsync().GetAwaiter().GetResult()
                 .WriteCollectedAnswers().GetAwaiter().GetResult();
