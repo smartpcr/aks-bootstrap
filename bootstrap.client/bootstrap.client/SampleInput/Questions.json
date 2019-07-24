@@ -1,0 +1,22 @@
+[
+    {
+        "id": "global.subscriptionName",
+        "text": "Are you okay?",
+        "options": ["Yes", "No"],
+        "parentIds": []
+    },
+    {
+        "id": "aks.aksOwnerAadUpn",
+        "text": "Are you really okay?",
+        "options": ["Yes", "No"],
+        "parentIds": []
+    },
+    {
+        "id": "global.subscriptionId",
+        "text": "Why are you feeling okay?",
+        "parentIds": ["global.subscriptionName"],
+        "conditions": {
+            "global.subscriptionName": "Yes"
+        }
+    }
+]
