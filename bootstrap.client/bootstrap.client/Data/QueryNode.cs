@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,9 @@ namespace bootstrap.client.Data
         public IEnumerable<string> ParentIds { get; private set; }
         public IEnumerable<string> Options { get; private set; }
         public IDictionary<string, string> Conditions { get; private set; }
+        public bool IgnoreSave { get; set; }
+
+        public ResponseType ResponseType { get; set; }
 
         public bool HasParents()
         {

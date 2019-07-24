@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
+using System;
 
 namespace bootstrap.client.Extensions
 {
@@ -16,7 +17,7 @@ namespace bootstrap.client.Extensions
         {
             var values = new JObject();
             var roots = registry.GetRootQueries();
-            foreach(var root in roots)
+            foreach (var root in roots)
             {
                 WriteQueryResponse(root, values, registry);
             }
@@ -41,7 +42,7 @@ namespace bootstrap.client.Extensions
 
         private static void WriteQueryNodeValue(QueryNode query, JObject values)
         {
-            if (!query.HasAnswer()) return;
+            if (!query.HasAnswer() || query.IgnoreSave) return;
 
             var properties = query.Id.Split(".");
 
@@ -55,7 +56,24 @@ namespace bootstrap.client.Extensions
                 }
                 propVal = propVal[properties[ind]];
             }
-            propVal[properties[ind]] = query.Answer;
+            propVal[properties[ind]] = GetResponse(query);
+        }
+
+        private static JToken GetResponse(QueryNode query)
+        {
+            switch (query.ResponseType)
+            {
+                case ResponseType.String:
+                    return query.Answer;
+                case ResponseType.Integer:
+                    return Convert.ToInt32(query.Answer);
+                case ResponseType.Boolean:
+                    var text = query.Answer.ToLower();
+                    text = text.Equals("yes") || text.Equals("true") ? "true" : "false";
+                    return Convert.ToBoolean(text);
+                default:
+                    throw new ArgumentException("Unsupported response type");
+            }
         }
     }
 }

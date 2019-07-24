@@ -1,22 +1,41 @@
 [
-    {
-        "id": "global.subscriptionName",
-        "text": "Are you okay?",
-        "options": ["Yes", "No"],
-        "parentIds": []
-    },
-    {
-        "id": "aks.aksOwnerAadUpn",
-        "text": "Are you really okay?",
-        "options": ["Yes", "No"],
-        "parentIds": []
-    },
-    {
-        "id": "global.subscriptionId",
-        "text": "Why are you feeling okay?",
-        "parentIds": ["global.subscriptionName"],
-        "conditions": {
-            "global.subscriptionName": "Yes"
-        }
+  {
+    "id": "global.subscriptionId",
+    "text": "What is the subscription id?"
+  },
+  {
+    "id": "global.productShortName",
+    "text": "What is the product name?"
+  },
+  {
+    "id": "existing_acr",
+    "ignoreSave": true,
+    "responseType": "boolean",
+    "text": "Is there any existing acr that you want to use?",
+    "options": [ "Yes", "No" ]
+  },
+  {
+    "id": "acr.name",
+    "text": "What is the acr name?",
+    "parentIds": [ "existing_acr" ],
+    "conditions": {
+      "existing_acr": "Yes"
     }
+  },
+  {
+    "id": "acr.resourceGroup",
+    "text": "What is the acr resource group?",
+    "parentIds": [ "existing_acr" ],
+    "conditions": {
+      "existing_acr": "Yes"
+    }
+  },
+  {
+    "id": "acr.email",
+    "text": "What is the acr email?",
+    "parentIds": [ "existing_acr" ],
+    "conditions": {
+      "existing_acr": "Yes"
+    }
+  }
 ]
