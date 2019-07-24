@@ -29,9 +29,13 @@ namespace bootstrap.client.Collector
 
         public bool MoveNext()
         {
+            if(queries == null)
+            {
+                Reset();
+            }
             if(currentQ == null)
             {
-                if (queries != null && queries.Any()) {
+                if (queries.Any()) {
                     currentQ = queries.Pop();
                     current = currentQ.Dequeue();
                 }
@@ -53,7 +57,7 @@ namespace bootstrap.client.Collector
                 currentQ = currentQ.Any() ? currentQ : (queries.Any() ? queries.Pop() : null);
                 current = currentQ?.Dequeue();
             }
-            return current == null;
+            return current != null;
         }
 
         private Queue<QueryNode> GetChildQueries(QueryNode current)
@@ -86,7 +90,10 @@ namespace bootstrap.client.Collector
             {
                 rootQ.Enqueue(query);
             }
-            queries.Push(rootQ);
+            if (rootQ.Any())
+            {
+                queries.Push(rootQ);
+            }
             currentQ = null;
             current = null;
         }

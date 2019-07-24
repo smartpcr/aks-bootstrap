@@ -4,7 +4,9 @@ using bootstrap.client.Interfaces;
 using bootstrap.client.Readers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace bootstrap.client
@@ -46,13 +48,28 @@ namespace bootstrap.client
 
         public static void Main(string[] args)
         {
+            var fileName = GetFileName(args);
             var serviceProvider = ConfigureApplication();
-            new Program("",
+            new Program(fileName,
                 serviceProvider.GetRequiredService<IQueryReader>(),
                 serviceProvider.GetRequiredService<IQueryRegistry>(),
                 serviceProvider.GetRequiredService<IAnswerCollector>())
                 .ReadQueriesAsync().GetAwaiter().GetResult()
                 .CollectAnswersAsync().GetAwaiter().GetResult();
+        }
+
+        private static string GetFileName(string[] args)
+        {
+            if(args.Length == 0)
+            {
+                throw new InvalidOperationException("No file supplied");
+            }
+            var fileName = args[0];
+            if(!File.Exists(fileName))
+            {
+                throw new ArgumentException("Supplied file doesn't exits");
+            }
+            return fileName;
         }
 
         private static IServiceProvider ConfigureApplication()

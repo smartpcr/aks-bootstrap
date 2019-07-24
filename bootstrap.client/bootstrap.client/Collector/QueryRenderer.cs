@@ -10,14 +10,14 @@ namespace bootstrap.client.Collector
     {
         public void Render(QueryNode query)
         {
-            Console.WriteLine(query.DisplayText);
+            PrintLn(query.DisplayText);
             if(!query.HasOptions())
             {
                 var answer = Console.ReadLine().Trim();
                 while(!IsValid(answer))
                 {
-                    Console.WriteLine("Invalid response, please try again ..");
-                    answer = Console.ReadLine().Trim();
+                    PrintLn("Invalid response, please try again ..");
+                    answer = ReadResponse();
                 }
                 query.Answer = answer;
             }
@@ -30,13 +30,22 @@ namespace bootstrap.client.Collector
                     options.Add(ind.ToString(), opt);
                     ind++;
                 }
-                var answer = Console.ReadLine().Trim().ToLower();
+                RenderOptions(options);
+                var answer = ReadResponse().ToLower();
                 while (!IsValid(answer, options))
                 {
-                    Console.WriteLine("Invalid response, please try again ..");
-                    answer = Console.ReadLine().Trim();
+                    PrintLn("Invalid response, please try again ..");
+                    answer = ReadResponse();
                 }
                 query.Answer = options[answer];
+            }
+        }
+
+        private void RenderOptions(Dictionary<string, string> options)
+        {
+            foreach(var opt in options.Keys)
+            {
+                PrintLn($"{opt}. {options[opt]}");
             }
         }
 
@@ -48,6 +57,21 @@ namespace bootstrap.client.Collector
         private bool IsValid(string answer)
         {
             return !string.IsNullOrEmpty(answer);
+        }
+
+        private void PrintLn(string message)
+        {
+            Console.WriteLine(message);
+        }
+        private void Print(string message)
+        {
+            Console.Write(message);
+        }
+
+        private string ReadResponse()
+        {
+            Print("=> ");
+            return Console.ReadLine().Trim();
         }
     }
 }

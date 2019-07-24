@@ -50,6 +50,10 @@ namespace bootstrap.client.Data
 
         public IEnumerable<QueryNode> GetChildren(string parentId)
         {
+            if(!Children.ContainsKey(parentId))
+            {
+                return new QueryNode[0]; 
+            }
             return Children[parentId].ToArray<QueryNode>();
         }
     }
