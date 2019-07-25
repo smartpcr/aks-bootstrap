@@ -18,6 +18,7 @@ namespace Wizard.Assets
         #region asset override
 
         public override AssetType Type => AssetType.AppInsights;
+        public override AssetKind Kind => AssetKind.Infra;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {

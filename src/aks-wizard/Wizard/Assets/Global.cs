@@ -14,8 +14,11 @@ namespace Wizard.Assets
         [PropertyPath("global/spaceName")]
         public string SpaceName { get; set; }
 
+        public string ServicePrincipal { get; set; }
+
 
         public override AssetType Type => AssetType.Global;
+        public override AssetKind Kind => AssetKind.Shared;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
@@ -42,6 +45,11 @@ namespace Wizard.Assets
             if (!string.IsNullOrWhiteSpace(SpaceName))
             {
                 writer.Write($"{spaces}spaceName: {SpaceName}\n");
+            }
+
+            if (!string.IsNullOrWhiteSpace(ServicePrincipal))
+            {
+                writer.Write($"{spaces}servicePrincipal: {ServicePrincipal}\n");
             }
         }
     }

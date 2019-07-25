@@ -19,6 +19,7 @@ namespace Wizard.Assets
 
         #region override
         public override AssetType Type => AssetType.Dns;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
             new Dependency(AssetType.Global)

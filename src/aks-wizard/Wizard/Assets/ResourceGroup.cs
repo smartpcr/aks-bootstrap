@@ -15,6 +15,7 @@ namespace Wizard.Assets
         public string Location { get; set; }
 
         public override AssetType Type => AssetType.ResourceGroup;
+        public override AssetKind Kind => AssetKind.Infra;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {

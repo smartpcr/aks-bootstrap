@@ -15,6 +15,7 @@ namespace Wizard.Assets
 
         public string Key { get; }
         public abstract AssetType Type { get; }
+        public abstract AssetKind Kind { get; }
         public abstract IList<Dependency> Dependencies { get; }
         public abstract int SortOrder { get; }
 

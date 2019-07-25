@@ -17,6 +17,7 @@ namespace Wizard.Assets
 
         #region asset override
         public override AssetType Type => AssetType.Terraform;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
             new Dependency(AssetType.Global)

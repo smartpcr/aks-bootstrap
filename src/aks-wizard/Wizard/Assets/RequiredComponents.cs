@@ -37,6 +37,7 @@ namespace Wizard.Assets
 
         #region override
         public override AssetType Type => AssetType.RequiredComponents;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>();
         public override int SortOrder => 0;
 

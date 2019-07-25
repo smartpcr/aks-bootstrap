@@ -41,6 +41,7 @@ namespace Wizard
 
                     services.TryAddSingleton<AssetManager>();
                     services.TryAddSingleton<InfraBuilder>();
+                    services.TryAddSingleton<SolutionBuilder>();
                     services.TryAddSingleton<App>();
                 });
 

@@ -21,6 +21,7 @@ namespace Wizard.Assets
         public string TenantId { get; set; }
 
         public override AssetType Type => AssetType.Subscription;
+        public override AssetKind Kind => AssetKind.Infra;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>();
 

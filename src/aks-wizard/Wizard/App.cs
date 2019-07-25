@@ -12,13 +12,16 @@ namespace Wizard
         private readonly ServiceContext _context;
         private readonly ILogger<App> _logger;
         private readonly InfraBuilder _infraBuilder;
+        private readonly SolutionBuilder _solutionBuilder;
 
         public App(IOptions<ServiceContext> context, ILogger<App> logger,
-            InfraBuilder infraBuilder)
+            InfraBuilder infraBuilder,
+            SolutionBuilder solutionBuilder)
         {
             _context = context.Value;
             _logger = logger;
             _infraBuilder = infraBuilder;
+            _solutionBuilder = solutionBuilder;
 
             Name = _context.Role;
             Description = _context.Description;
@@ -89,6 +92,7 @@ namespace Wizard
                     {
                         _logger.LogInformation(
                             $"Generating code based on manifest {manifestJsonFile.Value} and write to {outputFolder.Value}");
+                        _solutionBuilder.GenerateCode(manifestJsonFile.Value, outputFolder.Value);
                     });
                 });
 

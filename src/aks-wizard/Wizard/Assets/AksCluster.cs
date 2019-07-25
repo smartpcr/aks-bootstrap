@@ -34,6 +34,7 @@ namespace Wizard.Assets
         #endregion
 
         public override AssetType Type => AssetType.KubernetesCluster;
+        public override AssetKind Kind => AssetKind.Infra;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {

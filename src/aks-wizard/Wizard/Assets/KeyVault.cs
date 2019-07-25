@@ -10,11 +10,15 @@ namespace Wizard.Assets
     [ObjectPath("azure/kv")]
     public class KeyVault : BaseAsset, IAzureAssetValidator
     {
-        [MaxLength(25), MinLength(3)] public string Name { get; set; }
+        [MaxLength(25), MinLength(3)]
+        public string Name { get; set; }
+
+        public string ResourceGroup { get; set; }
 
         #region override
 
         public override AssetType Type => AssetType.KeyVault;
+        public override AssetKind Kind => AssetKind.Shared;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
@@ -30,7 +34,11 @@ namespace Wizard.Assets
             writer.Write($"{spaces}kv:\n");
             spaces = "".PadLeft(indent + 2);
             writer.Write($"{spaces}name: {Name}\n");
-            base.WriteYaml(writer, assetManager, loggerFactory, indent + 2);
+            var resourceGroup = ResourceGroup ?? assetManager.GetResourceGroup()?.Name;
+            if (!string.IsNullOrEmpty(resourceGroup))
+            {
+                writer.Write($"{spaces}resourceGroup: {resourceGroup}\n");
+            }
         }
 
         #endregion

@@ -8,6 +8,7 @@
     "envName": "dev",
     "spaceName": "xiaodong",
     "resourceGroup": "onecs",
+    "servicePrincipal": "onecs-dev-xiaodong",
     "components": {
       "kv": true,
       "aks": true,
@@ -30,7 +31,9 @@
       "stateStorageAccountName": "onece-terraform-state"
     },
     "acr": {
-      "name": "onecsdevacr"
+      "name": "onecsdevacr",
+      "passwordSecretName": "onecsdevacr-pwd",
+      "email": "xiaodoli@microsoft.com"
     },
     "aks": {
       "clusterName": "onecs-cluster",
@@ -119,27 +122,88 @@
       "domainOwnerEmail": "xiaodoli@microsoft.com"
     }
   },
-  "services": {
+  "code": {
     "external": [
       {
-        "name": "service-tree"
+        "name": "service-tree",
+        "endpoint": "https://servicetree.msftcloudes.com",
+        "resourceId": "bee782c6-8654-4298-a692-90976578870d"
+      },
+      {
+        "name": "kusto-vsosi",
+        "endpoint": "https://vsosi.kusto.windows.net"
       }
     ],
+    "privateFeeds": [
+      {
+        "name": "mseng",
+        "url": "https://mseng.pkgs.visualstudio.com/_packaging/AzureDevOps/nuget/v3/index.json",
+        "passwordFromEnvironment": "mseng"
+      }
+    ],
+    "volumeShares": [
+      {
+        "name": "kv-cert",
+        "hostPath": "~/.secrets",
+        "containerPath": "/secrets/disk/keyvault-certificate",
+        "localOnly": true
+      }
+    ],
+    "resources": {
+      "api": {
+        "requests":{
+          "memory": "200Mi",
+          "cpu": "100m"
+        },
+        "limits":{
+          "memory": "800Mi",
+          "cpu": "750m"
+        }
+      },
+      "job": {
+        "requests":{
+          "memory": "200Mi",
+          "cpu": "100m"
+        },
+        "limits":{
+          "memory": "800Mi",
+          "cpu": "750m"
+        }
+      },
+      "web": {
+        "requests":{
+          "memory": "250Mi",
+          "cpu": "100m"
+        },
+        "limits":{
+          "memory": "1000Mi",
+          "cpu": "1500m"
+        }
+      }
+    },
     "services": [
       {
         "name": "onecs-graph",
         "type": "api",
-        "isFrontend": true
+        "isFrontend": true,
+        "containerPort": 19901
       },
       {
         "name": "onecs-assessment",
         "type": "api",
-        "isFrontend": true
+        "isFrontend": true,
+        "containerPort": 19902
       },
       {
         "name": "onecs-web",
         "type": "web",
-        "isFrontend": true
+        "isFrontend": true,
+        "containerPort": 19903
+      },
+      {
+        "name": "onecs-session-processor",
+        "type": "job",
+        "schedule": "* * */1 * *"
       }
     ]
   }

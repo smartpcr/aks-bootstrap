@@ -1,0 +1,1 @@
+dotnet run -- infra gen ".\Evidence\onecs.json" "c:\Users\xiaodoli\Desktop\infra"

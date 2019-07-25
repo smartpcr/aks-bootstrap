@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -9,20 +8,20 @@ using Wizard.Assets;
 
 namespace Wizard
 {
-    public class InfraBuilder
+    public class SolutionBuilder
     {
         private readonly AssetManager _assetManager;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger<InfraBuilder> _logger;
+        private readonly ILogger<SolutionBuilder> _logger;
 
-        public InfraBuilder(AssetManager assetManager, ILoggerFactory loggerFactory)
+        public SolutionBuilder(AssetManager assetManager, ILoggerFactory loggerFactory)
         {
             _assetManager = assetManager;
             _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger<InfraBuilder>();
+            _logger = loggerFactory.CreateLogger<SolutionBuilder>();
         }
 
-        public void BuildInfraSetupScript(string manifestFile, string outputFolder)
+        public void GenerateCode(string manifestFile, string solutionFolder)
         {
             IEnumerable<IAsset> unresolvedAssets = null;
             var assets = AssetReader.Read(manifestFile);
@@ -48,54 +47,24 @@ namespace Wizard
             }
 
             var sortedComponents = _assetManager.GetAllAssetsWithObjPath()
-                .Where(c => c.Kind == AssetKind.Infra || c.Kind == AssetKind.Shared)
+                .Where(c => c.Kind == AssetKind.Code || c.Kind == AssetKind.Shared)
                 .OrderBy(c => c.SortOrder)
                 .ToList();
             var validator = new AssetValidator(_assetManager, _loggerFactory);
             validator.TryToValidateAssets(sortedComponents);
-            var envName = "dev";
-            var spaceName = Environment.UserName;
-            if (sortedComponents.FirstOrDefault(c => c.Type == AssetType.Global) is Global global)
+
+            if (!Directory.Exists(solutionFolder))
             {
-                envName = global.EnvName;
-                spaceName = global.SpaceName;
+                Directory.CreateDirectory(solutionFolder);
+            }
+            var manifestYamlFile = Path.Combine(solutionFolder, "services.yaml");
+            _logger.LogInformation($"Set manifest file to '{new FileInfo(manifestYamlFile).FullName}'");
+            if (File.Exists(manifestYamlFile))
+            {
+                File.Delete(manifestYamlFile);
             }
 
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-            var envFolder = Path.Join(outputFolder, "env", envName);
-            if (!Directory.Exists(envFolder))
-            {
-                Directory.CreateDirectory(envFolder);
-            }
-
-            var spaceFolder = envFolder;
-            if (!string.IsNullOrEmpty(spaceName))
-            {
-                spaceFolder = Path.Join(envFolder, spaceName);
-            }
-            if (!Directory.Exists(spaceFolder))
-            {
-                Directory.CreateDirectory(spaceFolder);
-            }
-
-            var zipFilePath = Path.Join("Evidence", "scripts.zip");
-            if (!File.Exists(zipFilePath))
-            {
-                throw new Exception($"Unable to find script bundle: {new FileInfo(zipFilePath).FullName}");
-            }
-            ZipFile.ExtractToDirectory(zipFilePath, outputFolder, true);
-
-            var valueYamlFile = Path.Combine(spaceFolder, "values.yaml");
-            _logger.LogInformation($"Set values yaml file to '{new FileInfo(valueYamlFile).FullName}'");
-            if (File.Exists(valueYamlFile))
-            {
-                File.Delete(valueYamlFile);
-            }
-
-            using (var writer = new StreamWriter(File.OpenWrite(valueYamlFile)))
+            using (var writer = new StreamWriter(File.OpenWrite(manifestYamlFile)))
             {
                 foreach (var asset in sortedComponents)
                 {
@@ -104,12 +73,12 @@ namespace Wizard
             }
 
             // replace "True" and "False"
-            var yamlContent = File.ReadAllText(valueYamlFile);
+            var yamlContent = File.ReadAllText(manifestYamlFile);
             var trueRegex = new Regex("\\bTrue\\b");
             yamlContent = trueRegex.Replace(yamlContent, "true");
             var falseRegex = new Regex("\\bFalse\\b");
             yamlContent = falseRegex.Replace(yamlContent, "false");
-            File.WriteAllText(valueYamlFile, yamlContent);
+            File.WriteAllText(manifestYamlFile, yamlContent);
         }
     }
 }

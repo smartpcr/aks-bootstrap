@@ -9,6 +9,7 @@ namespace Wizard.Assets
     {
         string Key { get; }
         AssetType Type { get; }
+        AssetKind Kind { get; }
         IList<Dependency> Dependencies { get; }
         int SortOrder { get; }
 
@@ -36,9 +37,22 @@ namespace Wizard.Assets
         ServiceBus,
         Dns,
         Prodct,
+        PrivateFeed,
+        VolumeShare,
+        KubeResources,
+        Service,
+        Solution,
+        Project,
         Web,
         Api,
         Job,
         ExternalService,
+    }
+
+    public enum AssetKind
+    {
+        Infra,
+        Code,
+        Shared
     }
 }

@@ -11,11 +11,13 @@ namespace Wizard.Assets
         public string Name { get; set; }
         public string PasswordSecretName { get; set; }
         public string Email { get; set; }
+        public string ResourceGroup { get; set; }
         #endregion
 
         #region asset override
 
         public override AssetType Type => AssetType.ContainerRegistry;
+        public override AssetKind Kind => AssetKind.Shared;
 
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
@@ -32,7 +34,12 @@ namespace Wizard.Assets
             writer.Write($"{spaces}name: {Name}\n");
             writer.Write($"{spaces}passwordSecretName: {PasswordSecretName}\n");
             writer.Write($"{spaces}email: {Email}\n");
-            base.WriteYaml(writer, assetManager, loggerFactory, indent + 2);
+
+            var resourceGroup = ResourceGroup ?? assetManager.GetResourceGroup()?.Name;
+            if (!string.IsNullOrEmpty(resourceGroup))
+            {
+                writer.Write($"{spaces}resourceGroup: {resourceGroup}\n");
+            }
         }
 
         #endregion

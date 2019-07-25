@@ -19,6 +19,7 @@ namespace Wizard.Assets
         #endregion
 
         public override AssetType Type => AssetType.ServiceBus;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
             new Dependency(AssetType.Global)

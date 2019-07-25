@@ -1,0 +1,1 @@
+dotnet run -- app gen ".\Evidence\onecs.json" "c:\Users\xiaodoli\Desktop\solution"

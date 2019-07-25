@@ -13,6 +13,7 @@ namespace Wizard.Assets
         public IAsset[] Items { get; set; } = new IAsset[0];
         public Type ItemType => typeof(CosmosDb);
         public override AssetType Type => AssetType.CosmosDb;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
             new Dependency(AssetType.Global)
@@ -47,6 +48,7 @@ namespace Wizard.Assets
         public CosmosDbCollection[] Collections { get; set; }
 
         public override AssetType Type => AssetType.CosmosDb;
+        public override AssetKind Kind => AssetKind.Infra;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>()
         {
             new Dependency(AssetType.Global)
