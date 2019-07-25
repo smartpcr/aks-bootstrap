@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Wizard.Assets;
 
@@ -19,7 +22,7 @@ namespace Wizard
             _logger = loggerFactory.CreateLogger<InfraBuilder>();
         }
 
-        public void Build(string manifestFile, string outputFolder)
+        public void BuildInfraSetupScript(string manifestFile, string outputFolder)
         {
             IEnumerable<IAsset> unresolvedAssets = null;
             var assets = AssetReader.Read(manifestFile);
@@ -44,20 +47,48 @@ namespace Wizard
                 }
             }
 
+            var sortedComponents = _assetManager.GetAllAssetsWithObjPath();
+            var validator = new AssetValidator(_assetManager, _loggerFactory);
+            validator.TryToValidateAssets(sortedComponents);
+            var envName = "dev";
+            var spaceName = Environment.UserName;
+            if (sortedComponents.FirstOrDefault(c => c.Type == AssetType.Global) is Global global)
+            {
+                envName = global.EnvName;
+                spaceName = global.SpaceName;
+            }
+
             if (!Directory.Exists(outputFolder))
             {
                 Directory.CreateDirectory(outputFolder);
             }
+            var envFolder = Path.Join(outputFolder, "env", envName);
+            if (!Directory.Exists(envFolder))
+            {
+                Directory.CreateDirectory(envFolder);
+            }
 
-            var sortedComponents = _assetManager.GetAllAssetsWithObjPath();
-            var validator = new AssetValidator(_assetManager, _loggerFactory);
-            validator.TryToValidateAssets(sortedComponents);
+            var spaceFolder = envFolder;
+            if (!string.IsNullOrEmpty(spaceName))
+            {
+                spaceFolder = Path.Join(envFolder, spaceName);
+            }
+            if (!Directory.Exists(spaceFolder))
+            {
+                Directory.CreateDirectory(spaceFolder);
+            }
 
-            var valueYamlFile = Path.Combine(outputFolder, "values.yaml");
+            var zipFilePath = Path.Join("Evidence", "scripts.zip");
+            if (!File.Exists(zipFilePath))
+            {
+                throw new Exception($"Unable to find script bundle: {new FileInfo(zipFilePath).FullName}");
+            }
+            ZipFile.ExtractToDirectory(zipFilePath, outputFolder, true);
+
+            var valueYamlFile = Path.Combine(spaceFolder, "values.yaml");
+            _logger.LogInformation($"Set values yaml file to '{new FileInfo(valueYamlFile).FullName}'");
             if (File.Exists(valueYamlFile))
             {
-                _logger.LogInformation(new FileInfo(valueYamlFile).FullName);
-
                 File.Delete(valueYamlFile);
             }
 
@@ -68,6 +99,14 @@ namespace Wizard
                     asset.WriteYaml(writer, _assetManager, _loggerFactory);
                 }
             }
+
+            // replace "True" and "False"
+            var yamlContent = File.ReadAllText(valueYamlFile);
+            var trueRegex = new Regex("\\bTrue\\b");
+            yamlContent = trueRegex.Replace(yamlContent, "true");
+            var falseRegex = new Regex("\\bFalse\\b");
+            yamlContent = falseRegex.Replace(yamlContent, "false");
+            File.WriteAllText(valueYamlFile, yamlContent);
         }
     }
 }

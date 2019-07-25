@@ -6,7 +6,7 @@
     "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
     "location": "westus2",
     "envName": "dev",
-    "spaceName": "xiaodoli",
+    "spaceName": "xiaodong",
     "resourceGroup": "onecs",
     "components": {
       "kv": true,
@@ -25,7 +25,10 @@
     "kv": {
       "name": "xd-kv"
     },
-    "terraform": {},
+    "terraform": {
+      "servicePrincipal": "onece-terraform-sp",
+      "stateStorageAccountName": "onece-terraform-state"
+    },
     "acr": {
       "name": "onecsdevacr"
     },
@@ -54,25 +57,11 @@
           }
         ]
       },
-      "keyVaultAccess": [
-        "podIdentity",
-        "secretBroker"
-      ],
-      "metrics": [
-        "appInsights",
-        "prometheus"
-      ],
-      "logging": [
-        "appInsights",
-        "prometheus"
-      ],
-      "tracing": [
-        "appInsights",
-        "openTracing"
-      ],
-      "ingress": [
-        "nginx"
-      ],
+      "keyVaultAccess": ["podIdentity", "secretBroker"],
+      "metrics": ["appInsights", "prometheus"],
+      "logging": ["appInsights", "prometheus"],
+      "tracing": ["appInsights", "openTracing"],
+      "ingress": ["nginx"],
       "certs": [
         {
           "name": "KeyVault-Certificate"
@@ -117,7 +106,18 @@
           }
         ]
       }
-    ]
+    ],
+    "serviceBus": {
+      "name": "onecs-sb-dev",
+      "queues": ["assessment-changes", "work-item-changes"],
+      "topics": ["status"]
+    },
+    "dns": {
+      "name": "onecs-dev-dns",
+      "domain": "xiaodong.world",
+      "sslCert": "xiaodong-world-tls",
+      "domainOwnerEmail": "xiaodoli@microsoft.com"
+    }
   },
   "services": {
     "external": [

@@ -33,6 +33,7 @@ namespace Wizard.Assets
         ContainerRegistry,
         KubernetesCluster,
         AppInsights,
+        ServiceBus,
         Dns,
         Prodct,
         Web,

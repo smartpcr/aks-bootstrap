@@ -53,7 +53,7 @@ namespace Wizard
                         generateCmd.OnExecute(() =>
                         {
                             _logger.LogInformation($"Generating infra scripts based on manifest {manifestJsonFile.Value} and write to {outputFolder.Value}");
-                            _infraBuilder.Build(manifestJsonFile.Value, outputFolder.Value);
+                            _infraBuilder.BuildInfraSetupScript(manifestJsonFile.Value, outputFolder.Value);
                         });
                     });
 

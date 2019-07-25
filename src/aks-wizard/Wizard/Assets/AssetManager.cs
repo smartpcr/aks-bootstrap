@@ -23,8 +23,6 @@ namespace Wizard.Assets
                 throw new Exception("Component already added");
             }
 
-
-
             foreach (var dependency in component.Dependencies)
             {
                 if (!dependency.IsOptional && !dependency.CanHaveMany)
@@ -51,6 +49,27 @@ namespace Wizard.Assets
 
             return _components.Values.FirstOrDefault(c =>
                 c.Type == type && !string.IsNullOrEmpty(c.Key));
+        }
+
+        #region get asset
+        public Global GetGlobal()
+        {
+            return Get(AssetType.Global) as Global;
+        }
+
+        public AzureSubscription GetSubscription()
+        {
+            var global = GetGlobal();
+            var subscriptionAssetKey = global?.Dependencies.FirstOrDefault(d => d.Type == AssetType.Subscription)?.Key;
+            return Get(AssetType.Subscription, subscriptionAssetKey) as AzureSubscription;
+        }
+        #endregion
+
+        public ResourceGroup GetResourceGroup()
+        {
+            var global = GetGlobal();
+            var subscriptionAssetKey = global?.Dependencies.FirstOrDefault(d => d.Type == AssetType.ResourceGroup)?.Key;
+            return Get(AssetType.ResourceGroup, subscriptionAssetKey) as ResourceGroup;
         }
 
         public IEnumerable<IAsset> GetFulfilledComponents()
