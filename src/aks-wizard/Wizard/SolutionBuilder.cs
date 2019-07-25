@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -53,10 +54,39 @@ namespace Wizard
             var validator = new AssetValidator(_assetManager, _loggerFactory);
             validator.TryToValidateAssets(sortedComponents);
 
+            // update solution file
+            var product = _assetManager.Get(AssetType.Prodct) as Product;
+            if (product == null)
+            {
+                throw new Exception("Missing dependency [Product]");
+            }
+            var defaultSolutionFile = Path.Join(solutionFolder, $"{product.Name}.sln");
+            if (sortedComponents.FirstOrDefault(c => c.Type == AssetType.Service) is Services services)
+            {
+                foreach (var service in services.Items.OfType<Service>())
+                {
+                    service.SolutionFile = service.SolutionFile ?? defaultSolutionFile;
+                }
+            }
+
             if (!Directory.Exists(solutionFolder))
             {
                 Directory.CreateDirectory(solutionFolder);
             }
+            var zipFilePath = Path.Join("Evidence", "solution.zip");
+            if (!File.Exists(zipFilePath))
+            {
+                throw new Exception($"Unable to find solution bundle: {new FileInfo(zipFilePath).FullName}");
+            }
+            ZipFile.ExtractToDirectory(zipFilePath, solutionFolder, true);
+            var solutionFile = Directory.GetFiles(solutionFolder, "*.sln", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+            if (!string.IsNullOrEmpty(solutionFile))
+            {
+                File.Copy(solutionFile, defaultSolutionFile, true);
+                File.Delete(solutionFile);
+            }
+
             var manifestYamlFile = Path.Combine(solutionFolder, "services.yaml");
             _logger.LogInformation($"Set manifest file to '{new FileInfo(manifestYamlFile).FullName}'");
             if (File.Exists(manifestYamlFile))

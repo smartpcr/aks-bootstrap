@@ -61,7 +61,12 @@ namespace Wizard.Assets
         public string LivenessCheck { get; set; }
         public string ReadinessCheck { get; set; }
         public string[] Volumes { get; set; }
+        [JsonProperty("env")]
         public EnvironmentVariable[] EnvironmentVariables { get; set; }
+
+        public string Schedule { get; set; }
+        public string RestartPolicy { get; set; }
+        public string ConcurrencyPolicy { get; set; }
         #endregion
 
         #region asset
@@ -93,7 +98,7 @@ namespace Wizard.Assets
             spaces = "".PadLeft(indent + 2);
             if (!string.IsNullOrEmpty(SolutionFile))
             {
-                writer.Write($"{spaces}solutionFile: {SolutionFile}\n");
+                writer.Write($"{spaces}solutionFile: {SolutionFile.Replace("\\", "/")}\n");
             }
 
             if (string.IsNullOrEmpty(ProjectFile) && !string.IsNullOrEmpty(SolutionFile))
@@ -107,7 +112,7 @@ namespace Wizard.Assets
             }
             if (!string.IsNullOrEmpty(ProjectFile))
             {
-                writer.Write($"{spaces}solutionFile: {SolutionFile}\n");
+                writer.Write($"{spaces}projectFile: {ProjectFile.Replace("\\", "/")}\n");
             }
 
             if (!string.IsNullOrEmpty(AssemblyName))
@@ -123,26 +128,33 @@ namespace Wizard.Assets
             if (ServiceType == "web" || ServiceType == "api")
             {
                 writer.Write($"{spaces}containerPort: {ContainerPort}\n");
-            }
-            writer.Write($"{spaces}sshPort: {SshPort}\n");
-            if (string.IsNullOrEmpty(SslCert))
-            {
-                var dns = assetManager.Get(AssetType.Dns) as Dns;
-                SslCert = dns?.SslCert;
-            }
-            if (!string.IsNullOrEmpty(SslCert))
-            {
-                writer.Write($"{spaces}sslCert: {SslCert}\n");
-            }
-            writer.Write($"{spaces}isFrontEnd: {IsFrontend}\n");
+                writer.Write($"{spaces}sshPort: {SshPort}\n");
+                if (string.IsNullOrEmpty(SslCert))
+                {
+                    var dns = assetManager.Get(AssetType.Dns) as Dns;
+                    SslCert = dns?.SslCert;
+                }
+                if (!string.IsNullOrEmpty(SslCert))
+                {
+                    writer.Write($"{spaces}sslCert: {SslCert}\n");
+                }
+                writer.Write($"{spaces}isFrontEnd: {IsFrontend}\n");
 
-            if (!string.IsNullOrEmpty(LivenessCheck))
-            {
-                writer.Write($"{spaces}livenessCheck: {LivenessCheck}\n");
+                if (!string.IsNullOrEmpty(LivenessCheck))
+                {
+                    writer.Write($"{spaces}livenessCheck: {LivenessCheck}\n");
+                }
+                if (!string.IsNullOrEmpty(ReadinessCheck))
+                {
+                    writer.Write($"{spaces}readinessCheck: {ReadinessCheck}\n");
+                }
             }
-            if (!string.IsNullOrEmpty(ReadinessCheck))
+
+            if (ServiceType == "job")
             {
-                writer.Write($"{spaces}readinessCheck: {ReadinessCheck}\n");
+                writer.Write($"{spaces}schedule: {Schedule ?? "*/1 * * * *"}\n");
+                writer.Write($"{spaces}restartPolicy: {RestartPolicy ?? "Never"}\n");
+                writer.Write($"{spaces}concurrencyPolicy: {ConcurrencyPolicy ?? "Forbid"}\n");
             }
 
             if (Volumes?.Any() == true)

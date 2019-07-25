@@ -186,19 +186,46 @@
         "name": "onecs-graph",
         "type": "api",
         "isFrontend": true,
-        "containerPort": 19901
+        "containerPort": 19901,
+        "livenessCheck": "/health/live",
+        "readinessCheck": "/health/ready",
+        "volumes": ["kv-cert"],
+        "env": [
+          {
+            "name": "ASPNETCORE_ENVIRONMENT",
+            "value": "xiaodong"
+          }
+        ]
       },
       {
         "name": "onecs-assessment",
         "type": "api",
         "isFrontend": true,
-        "containerPort": 19902
+        "containerPort": 19902,
+        "livenessCheck": "/health/live",
+        "readinessCheck": "/health/ready",
+        "volumes": ["kv-cert"],
+        "env": [
+          {
+            "name": "ASPNETCORE_ENVIRONMENT",
+            "value": "xiaodong"
+          }
+        ]
       },
       {
         "name": "onecs-web",
         "type": "web",
         "isFrontend": true,
-        "containerPort": 19903
+        "containerPort": 19903,
+        "livenessCheck": "/health/live",
+        "readinessCheck": "/health/ready",
+        "volumes": ["kv-cert"],
+        "env": [
+          {
+            "name": "ASPNETCORE_ENVIRONMENT",
+            "value": "xiaodong"
+          }
+        ]
       },
       {
         "name": "onecs-session-processor",

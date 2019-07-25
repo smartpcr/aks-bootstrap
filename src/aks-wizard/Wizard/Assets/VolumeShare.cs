@@ -13,7 +13,7 @@ namespace Wizard.Assets
         public override AssetType Type => AssetType.VolumeShare;
         public override AssetKind Kind => AssetKind.Code;
         public override IList<Dependency> Dependencies { get; } = new List<Dependency>();
-        public override int SortOrder => 1;
+        public override int SortOrder => 5;
 
         public override void WriteYaml(StreamWriter writer, AssetManager assetManager, ILoggerFactory loggerFactory, int indent = 0)
         {
