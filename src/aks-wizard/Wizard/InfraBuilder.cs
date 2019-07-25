@@ -50,6 +50,9 @@ namespace Wizard
             }
 
             var sortedComponents = _assetManager.GetAllAssetsWithObjPath();
+            var validator = new AssetValidator(_assetManager, _loggerFactory);
+            validator.TryToValidateAssets(sortedComponents);
+
             var valueYamlFile = Path.Combine(outputFolder, "values.yaml");
             if (File.Exists(valueYamlFile))
             {

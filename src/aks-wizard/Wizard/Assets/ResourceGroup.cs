@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Wizard.Assets
 {
-    public class ResourceGroup : BaseAsset, IUniqueValidator
+    public class ResourceGroup : BaseAsset, IAzureAssetValidator
     {
         [Required, PropertyPath("global/resourceGroup")]
         public string Name { get; set; }
@@ -24,9 +24,25 @@ namespace Wizard.Assets
         public override int SortOrder { get; } = 0;
 
 
-        public bool Validate()
+        public (bool IsValid, string Error) ValidateAzureAsset(AssetManager assetManager, ILoggerFactory loggerFactory)
         {
-            return true;
+            return (true, null);
+        }
+
+        public bool Fix(AssetManager assetManager, ILoggerFactory loggerFactory)
+        {
+            int maxRetries = 5;
+            int retryCount = 0;
+            var validationResult = ValidateAzureAsset(assetManager, loggerFactory);
+            while (!validationResult.IsValid && retryCount < maxRetries)
+            {
+                Console.WriteLine("Enter vault name:");
+                Name = Console.ReadLine();
+                validationResult = ValidateAzureAsset(assetManager, loggerFactory);
+                retryCount++;
+            }
+
+            return validationResult.IsValid;
         }
 
         public override void WriteYaml(StreamWriter writer, AssetManager assetManager, ILoggerFactory loggerFactory,
@@ -35,6 +51,11 @@ namespace Wizard.Assets
             var spaces = "".PadLeft(indent);
             writer.Write($"{spaces}resourceGroup: {Name}\n");
             writer.Write($"{spaces}location: {Location}\n");
+        }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            return new List<ValidationResult>();
         }
     }
 }

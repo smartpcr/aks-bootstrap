@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Logging;
+
 namespace Wizard.Assets
 {
-    public interface IUniqueValidator
+    public interface IAzureAssetValidator : IValidatableObject
     {
-        bool Validate();
+        (bool IsValid, string Error) ValidateAzureAsset(AssetManager assetManager, ILoggerFactory loggerFactory);
+        bool Fix(AssetManager assetManager, ILoggerFactory loggerFactory);
     }
 }

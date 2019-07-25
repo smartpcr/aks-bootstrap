@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace Wizard.Assets
@@ -23,6 +23,8 @@ namespace Wizard.Assets
                 throw new Exception("Component already added");
             }
 
+
+
             foreach (var dependency in component.Dependencies)
             {
                 if (!dependency.IsOptional && !dependency.CanHaveMany)
@@ -37,6 +39,18 @@ namespace Wizard.Assets
             }
 
             _components.Add(component.Key, component);
+        }
+
+        public IAsset Get(AssetType type, string key = null)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                return _components.Values.FirstOrDefault(c =>
+                    c.Type == type && c.Key == key);
+            }
+
+            return _components.Values.FirstOrDefault(c =>
+                c.Type == type && !string.IsNullOrEmpty(c.Key));
         }
 
         public IEnumerable<IAsset> GetFulfilledComponents()
