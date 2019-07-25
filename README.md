@@ -9,4 +9,4 @@ Kubernetes is the top orchestration choice for developing microservices. Yet the
 
 This project tries to automate essential pieces required for running microservices on AKS. After answering a few questions, the project will create infrastructure setup scripts and solution skeleton that allow user to deploy to cluster.
 
-[details]()
+[details](https://github.com/smartpcr/aks-bootstrap/blob/master/src/aks-wizard/readme.md)
