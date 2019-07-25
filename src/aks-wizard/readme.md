@@ -1,8 +1,22 @@
 # Goals
 based on questions+answers in json file (passed in as argument), the solution will generate
-- azure resources
-    - env.yaml file
-    - values.yaml file
+- deployment scripts
+    - settings
+        - env.yaml file
+        - values.yaml file
+    - deployment script (run as user or service principal)
+        - setup infrastructure
+        - deploy service to aks cluster
+    - included resources
+        - service principal and aad integration
+        - acr (sync with existing acr)
+        - key vault (sync with existing kv)
+        - aks cluster with addons (devspaces, http routing, monitoring)
+        - nginx + external_dns (allow auto binding to any frondend services)
+        - dns
+        - cert-manager (with letsencrypt to auto issue/renew wildcard cert)
+        - cosmosd db
+        - service bus
 - service manifest file
     - sln
     - csproj

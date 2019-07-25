@@ -27,6 +27,7 @@ namespace Wizard
             Description = _context.Description;
             HelpOption("-o|--options", true);
 
+            SetupEvidenceCommand();
             SetupInfraCommand();
             SetupAppCommand();
         }
