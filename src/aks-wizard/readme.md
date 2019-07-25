@@ -1,10 +1,11 @@
 # Goals
 based on questions+answers in json file (passed in as argument), the solution will generate
-- deployment scripts: contains 3 folders
+- deployment scripts:
   ``` txt
-  env: settings
-  deploy: root deploy script
-  scripts: utility scripts and modules
+  contains 3 folders
+  - env: settings
+  - deploy: root deploy script
+  - scripts: utility scripts and modules
   ```
 
     - settings
