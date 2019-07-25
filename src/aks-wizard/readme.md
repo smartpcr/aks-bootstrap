@@ -18,7 +18,15 @@ based on questions+answers in json file (passed in as argument), the solution wi
 
 ## collect answers to questions and generate evidence
 
-TODO:
+``` cmd
+aksbootstrap evodemce collect "<answers output folder>"
+```
+
+## validate collected answers to questions and generate evidence
+
+``` cmd
+aksbootstrap evodemce validate "<evidence folder>"
+```
 
 ## generate infra setup scripts
 ``` cmd

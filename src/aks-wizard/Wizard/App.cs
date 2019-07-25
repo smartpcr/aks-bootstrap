@@ -37,6 +37,40 @@ namespace Wizard
             Execute(args);
         }
 
+        private void SetupEvidenceCommand()
+        {
+            Command("evidence", cmd =>
+            {
+                cmd.OnExecute(() =>
+                {
+                    Console.WriteLine("Specify subcommand: either 'collect' or 'validate'");
+                    cmd.ShowHelp();
+                    return 1;
+                });
+
+                cmd.Command("collect", collectCommand =>
+                {
+                    collectCommand.Description = "Collect evidence for required azure resource and solution structure";
+                    var outputFolder = collectCommand.Argument("output-folder", "output folder").IsRequired();
+                    collectCommand.OnExecute(() =>
+                    {
+                        _logger.LogInformation($"Starting to collect answers and write to {outputFolder.Value}...");
+                    });
+                });
+
+                cmd.Command("validate", validateCommand =>
+                {
+                    validateCommand.Description = "Validate collected evidence for required azure resource and solution structure";
+                    var inputFolder = validateCommand.Argument("input-folder", "input folder containing answers")
+                        .IsRequired();
+                    validateCommand.OnExecute(() =>
+                    {
+                        _logger.LogInformation($"Validating answers stored in {inputFolder.Value}...");
+                    });
+                });
+            });
+        }
+
         private void SetupInfraCommand()
         {
             Command("infra", infraCmd =>
