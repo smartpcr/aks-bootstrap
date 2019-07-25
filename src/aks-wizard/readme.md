@@ -1,25 +1,41 @@
 # Goals
 based on questions+answers in json file (passed in as argument), the solution will generate
-- deployment scripts
+- deployment scripts: contains 3 folders
+  ``` txt
+  env: settings
+  deploy: root deploy script
+  scripts: utility scripts and modules
+  ```
+
     - settings
-        - env.yaml file
-        - values.yaml file
+        - 2-level hierarchy: 1st level is environment (dev, int, prod), 2nd level is user space (optional)
+        - env.yaml file (default values for azure resources)
+        - values.yaml file at top, env and space levels that provide override values
     - deployment script (run as user or service principal)
         - setup infrastructure
         - deploy service to aks cluster
-    - included resources
+    - included azure resources
         - service principal and aad integration
         - acr (sync with existing acr)
         - key vault (sync with existing kv)
         - aks cluster with addons (devspaces, http routing, monitoring)
         - nginx + external_dns (allow auto binding to any frondend services)
-        - dns
-        - cert-manager (with letsencrypt to auto issue/renew wildcard cert)
+        - dns zone (point to azure name servers from domain provider such GoDaddy, namecheap, etc)
+        - cert-manager (with letsencrypt to auto generate/renew tls wildcard cert)
         - cosmosd db
         - service bus
+        - geneva (microsoft internal)
+        - app insights
+        - prometheus
+        - aad pod identity
+    - others
+        - dockerfile/docker-compose file are automatically generated for each service
+        - dynamically generate appsettings for envName and spaceName
+        - k8s yaml files are automatically generated for each service (deployment, secrets, service, ingress, cronjob)
+
 - service manifest file
     - sln
-    - csproj
+    - csproj for each service
     - nuget pkgs
     - common libs
     - update DI and use extension method to hookup
