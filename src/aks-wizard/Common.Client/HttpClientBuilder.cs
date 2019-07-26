@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Common.Auth;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -16,12 +18,17 @@ namespace Common.Client
     /// </summary>
     public static class HttpClientBuilder
     {
-        public static IHttpClientBuilder AddClient<TInterface, TImplementation>(this IServiceCollection services, HttpClientSettings settings)
+        public static IHttpClientBuilder AddClient<TInterface, TImplementation>(this IServiceCollection services, string settingName)
             where TImplementation : HttpClientBase, TInterface
             where TInterface: class
         {
+            var serviceProvider = services.BuildServiceProvider();
+            var settingOptionsSnapshot = serviceProvider.GetRequiredService<IOptionsSnapshot<HttpClientSettings>>();
+            var settings = settingOptionsSnapshot.Get(settingName);
+            var authSetting = serviceProvider.GetRequiredService<IOptions<AadAppSettings>>().Value;
 
-            Action<IServiceProvider, HttpClient> configureClient = (serviceProvider, client) => {
+            void ConfigureClient(IServiceProvider _, HttpClient client)
+            {
                 client.BaseAddress = new Uri(settings.EndpointUrl);
                 var defaultRequetHeaders = client.DefaultRequestHeaders;
                 if (defaultRequetHeaders.Accept.All(m => m.MediaType != "application/json"))
@@ -29,16 +36,17 @@ namespace Common.Client
                     defaultRequetHeaders.Accept?.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 }
 
-                if (settings.AuthSettings.TokenType != AuthTokenType.None)
+                if (!settings.AllowAnonymousAccess)
                 {
-                    var accessToken = GetBearerToken(settings.AuthSettings).GetAwaiter().GetResult();
+                    var accessToken = GetBearerToken(authSetting).GetAwaiter().GetResult();
                     defaultRequetHeaders.Add("Authorization", accessToken);
                 }
-                defaultRequetHeaders.Add("request-id", Activity.Current.Id);
-                Console.WriteLine($"Operation sent to request header: {Activity.Current.Id}");
-            };
 
-            return services.AddHttpClient<TInterface, TImplementation>(configureClient)
+                /*defaultRequetHeaders.Add("request-id", Activity.Current.Id);
+                Console.WriteLine($"Operation sent to request header: {Activity.Current.Id}");*/
+            }
+
+            return services.AddHttpClient<TInterface, TImplementation>(ConfigureClient)
                 .AddPolicyHandler(GetTimeoutPolicy(settings))
                 .AddPolicyHandler(request => GetRetryPolicy(request, settings))
                 .AddPolicyHandler(GetCircuitBreakerPolicy(settings));
@@ -67,5 +75,6 @@ namespace Common.Client
             var noOp = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
             return request.Method == HttpMethod.Get ? retryPolicy : noOp;
         }
+
     }
 }

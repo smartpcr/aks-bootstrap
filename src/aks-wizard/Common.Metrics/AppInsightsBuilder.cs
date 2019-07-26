@@ -69,7 +69,7 @@ namespace Common.Metrics
             });
         }
 
-        public static bool UseAppInsights(this IConfiguration configuration)
+        public static bool IsAppInsightsEnabled(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppInsightsSettings)) != null;
         }

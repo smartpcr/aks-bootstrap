@@ -29,10 +29,6 @@ namespace Common.Auth
                     throw new ArgumentNullException(nameof(vaultSettings));
                 }
             }
-            else if (string.IsNullOrEmpty(settings.ClientSecret))
-            {
-                throw new ArgumentNullException("ClientSecret not specified", nameof(settings));
-            }
 
             IConfidentialClientApplication app;
             if (!string.IsNullOrEmpty(settings.ClientCertName) && vaultSettings != null)
@@ -41,14 +37,6 @@ namespace Common.Auth
                 var pfx = new X509Certificate2(cert.Cer);
                 app = ConfidentialClientApplicationBuilder.Create(settings.ClientId)
                     .WithCertificate(pfx)
-                    .WithAuthority(settings.Authority)
-                    .Build();
-            }
-            else if (!string.IsNullOrEmpty(settings.ClientSecret))
-            {
-                app = ConfidentialClientApplicationBuilder
-                    .Create(settings.ClientId)
-                    .WithClientSecret(settings.ClientSecret)
                     .WithAuthority(settings.Authority)
                     .Build();
             }

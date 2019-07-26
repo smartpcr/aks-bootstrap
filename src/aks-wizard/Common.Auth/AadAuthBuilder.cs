@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Common.Auth
 {
     public static class AadAuthBuilder
     {
-        public static IServiceCollection AddAadAuth(this IServiceCollection services,
-            IConfiguration configuration)
+        public static IServiceCollection AddAadAuth(this IServiceCollection services)
         {
-            var aadAppSettings = new AadAppSettings();
-            configuration.Bind("aad", aadAppSettings);
+            var serviceProvider = services.BuildServiceProvider();
+            var aadAppSettings = serviceProvider.GetRequiredService<IOptions<AadAppSettings>>().Value;
+
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -27,7 +27,11 @@ namespace Common.Auth
             });
 
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
-                .AddAzureAD(options => configuration.Bind("AzureAd", options));
+                .AddAzureAD(options =>
+                {
+                    options.ClientId = aadAppSettings.ClientId;
+                    options.TenantId = aadAppSettings.TenantId;
+                });
 
             services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
             {
@@ -35,23 +39,18 @@ namespace Common.Auth
                 options.TokenValidationParameters.ValidateIssuer = false; // accept several tenants (here simplified)
             });
 
-//            services.AddProtectWebApiWithMicrosoftIdentityPlatformV2(Configuration)
-//                .AddProtectedApiCallsWebApis(Configuration, new string[] { "user.read", "offline_access" })
-//                .AddInMemoryTokenCaches();
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            /*services.AddProtectWebApiWithMicrosoftIdentityPlatformV2(Configuration)
+                .AddProtectedApiCallsWebApis(Configuration, new string[] { "user.read", "offline_access" })
+                .AddInMemoryTokenCaches();*/
 
             services.AddMvc(options =>
                 {
                     var policyBuilder = new AuthorizationPolicyBuilder();
-                    if (aadAppSettings.TokenType != AuthTokenType.None)
-                    {
-                        policyBuilder.RequireAuthenticatedUser();
-                    }
+                    policyBuilder.RequireAuthenticatedUser();
                     var policy = policyBuilder.Build();
                     options.Filters.Add(new AuthorizeFilter(policy));
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             return services;
         }

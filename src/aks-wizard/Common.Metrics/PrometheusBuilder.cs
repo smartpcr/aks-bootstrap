@@ -9,7 +9,7 @@ namespace Common.Metrics
 {
     public static class PrometheusBuilder
     {
-        public static bool UsePrometheus(this IConfiguration configuration)
+        public static bool IsPrometheusEnabled(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(PrometheusSettings)) != null;
         }
@@ -36,10 +36,12 @@ namespace Common.Metrics
         /// this is used in web host
         /// </summary>
         /// <param name="app"></param>
-        /// <param name="settings"></param>
-        public static void AddPrometheus(this IApplicationBuilder app,
-            PrometheusSettings settings)
+        /// <param name="configuration"></param>
+        public static void UsePrometheus(this IApplicationBuilder app, IConfiguration configuration)
         {
+            var settings = new PrometheusSettings();
+            configuration.Bind(nameof(PrometheusSettings), settings);
+
             app.UsePrometheusServer(options =>
             {
                 options.UseDefaultCollectors = true;

@@ -15,12 +15,7 @@ namespace Common.Auth
         public string ClientId { get; set; }
 
         /// <summary>
-        /// key vault secret for aad app client secret
-        /// </summary>
-        public string ClientSecret { get; set; }
-
-        /// <summary>
-        /// key vault secret for aad cert
+        /// client secret for aad app
         /// </summary>
         public string ClientCertName { get; set; }
 
@@ -34,10 +29,6 @@ namespace Common.Auth
         /// </summary>
         public string[] Scopes { get; set; }
 
-        /// <summary>
-        /// either none (anonymous), user (interactive, for browser) and api (service principal)
-        /// </summary>
-        public AuthTokenType TokenType { get; set; }
     }
 
     public enum AuthTokenType
