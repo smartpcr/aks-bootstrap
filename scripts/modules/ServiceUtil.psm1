@@ -569,13 +569,13 @@ function UpdateServiceAuthRedirectUrl() {
         if (-not ($serviceSpn.replyUrls -contains $replyUrl)) {
             $replyUrlList = New-Object System.Collections.ArrayList
             $replyUrlList.AddRange([array]$serviceSpn.replyUrls)
-            $replyUrlList.Add($replyUrl)
+            $replyUrlList.Add($replyUrl) | Out-Null
 
             $newReplyUrls = ""
             $replyUrlList | ForEach-Object {
                 $newReplyUrls += " " + $_
             }
-            az ad sp update --id $ServiceSetting.service.appId --replyUrls $newReplyUrls
+            az ad app update --id $ServiceSetting.service.appId --reply-urls $newReplyUrls
         }
         else {
             LogInfo -Message "Reply url is already added to service '$($ServiceSetting.service.name)'"

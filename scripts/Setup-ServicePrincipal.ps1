@@ -51,9 +51,9 @@ if ($null -eq $sp -or $sp.Length -eq 0) {
     az ad sp create-for-rbac -n $($bootstrapValues.global.servicePrincipal) --role contributor --keyvault $($bootstrapValues.kv.name) --cert $certName | Out-Null
     $sp = az ad sp list --display-name $($bootstrapValues.global.servicePrincipal) | ConvertFrom-Json
     LogInfo -Message "Granting spn '$($bootstrapValues.global.servicePrincipal)' 'contributor' role to subscription"
-    $existingAssignments = az role assignment list --assignee $sp.appId --role Contributor --scope "/subscriptions/$($azureAccount.id)" | ConvertFrom-Json
+    $existingAssignments = az role assignment list --assignee $sp.appId --role Owner --scope "/subscriptions/$($azureAccount.id)" | ConvertFrom-Json
     if ($existingAssignments.Count -eq 0) {
-        az role assignment create --assignee $sp.appId --role Contributor --scope "/subscriptions/$($azureAccount.id)" | Out-Null
+        az role assignment create --assignee $sp.appId --role Owner --scope "/subscriptions/$($azureAccount.id)" | Out-Null
     }
     else {
         LogInfo -Message "Assignment already exists."
