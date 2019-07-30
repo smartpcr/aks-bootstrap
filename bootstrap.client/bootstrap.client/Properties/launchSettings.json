@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "bootstrap.client": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Hack19\\Questions.json C:\\Hack19\\Values.json"
+    }
+  }
+}
