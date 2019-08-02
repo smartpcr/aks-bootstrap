@@ -16,7 +16,7 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -172,7 +172,7 @@ if ($bootstrapValues.global.components.docDb -and $bootstrapValues.cosmosdb.docD
     if (([string]$bootstrapValues.cosmosdb.docDb.account).Length -gt 30) {
         throw "Account name '$($bootstrapValues.cosmosdb.docDb.account)' length cannot exceed 30 characters"
     }
-    
+
     $cosmosdbSetting = @{
         account       = $bootstrapValues.cosmosdb.docDb.account
         api           = $bootstrapValues.cosmosdb.docDb.api

@@ -8,7 +8,7 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -20,7 +20,7 @@ Import-Module (Join-Path $moduleFolder "common2.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
-LogTitle "Retrieving terraform settings for environment $EnvName/$SpaceName..." 
+LogTitle "Retrieving terraform settings for environment $EnvName/$SpaceName..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 $sp = az ad sp list --display-name $bootstrapValues.global.servicePrincipal | ConvertFrom-Json
@@ -29,13 +29,13 @@ $spPwd = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $b
 $Script:subscription_id = $azureAccount.id
 $Script:tenant_id = $azureAccount.tenantId
 $Script:client_id = $sp.appId
-$Script:client_secret = $spPwd.value 
+$Script:client_secret = $spPwd.value
 
 $terraformFolder = Join-Path $envRootFolder "terraform"
 $testFolder = Join-Path $terraformFolder "test"
 Set-Location $testFolder
 
 LogStep -Step 1 -Message "Setting up resource group..."
-terraform init 
-terraform plan 
-terraform apply 
+terraform init
+terraform plan
+terraform apply

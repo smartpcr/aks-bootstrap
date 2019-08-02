@@ -10,7 +10,7 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -40,7 +40,7 @@ if ($bootstrapValues.global.components.aks -eq $true) {
         az ad sp delete --id $aksClusterSpns[0].appId
     }
     else {
-        LogInfo -Message "Multiple of spn exists for ''$aksClusterSpnName" 
+        LogInfo -Message "Multiple of spn exists for ''$aksClusterSpnName"
     }
 }
 

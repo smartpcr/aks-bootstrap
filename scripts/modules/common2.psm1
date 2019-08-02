@@ -6,7 +6,7 @@ function SetupGlobalEnvironmentVariables() {
 
     $ErrorActionPreference = "Stop"
     $scriptFolderName = Split-Path $ScriptFolder -Leaf
-    if ($null -eq $scriptFolderName -or $scriptFolderName -ne "Scripts") {
+    if ($null -eq $scriptFolderName -or $scriptFolderName -ne "scripts") {
         throw "Invalid script folder: '$ScriptFolder'"
     }
     $logFolder = Join-Path $ScriptFolder "log"

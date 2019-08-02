@@ -6,13 +6,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Set-StrictMode -Version Latest 
+Set-StrictMode -Version Latest
 
 $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -29,7 +29,7 @@ LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
 LogStep -Step 1 -Message "Login and retrieve settings..."
-$bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName 
+$bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
 LogStep -Step 2 -Message "Ensure service bus namespace '$($bootstrapValues.servicebus.name)' is created..."
@@ -46,7 +46,7 @@ if (!$serviceBusesFound -or ([array]$serviceBusesFound).Length -eq 0) {
 LogStep -Step 3 -Message "Ensure queues are created..."
 if ($bootstrapValues.servicebus.queues) {
     $bootstrapValues.servicebus.queues | ForEach-Object {
-        $queue = $_ 
+        $queue = $_
         $queuesFound = az servicebus queue list `
             --namespace-name $bootstrapValues.servicebus.name `
             --resource-group $bootstrapValues.servicebus.resourceGroup `
@@ -67,7 +67,7 @@ if ($bootstrapValues.servicebus.queues) {
 LogStep -Step 4 -Message "Ensure topics are created..."
 if ($bootstrapValues.servicebus.topics) {
     $bootstrapValues.servicebus.topics | ForEach-Object {
-        $topic = $_ 
+        $topic = $_
         $topicsFound = az servicebus topic list `
             --namespace-name $bootstrapValues.servicebus.name `
             --resource-group $bootstrapValues.servicebus.resourceGroup `

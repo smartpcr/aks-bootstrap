@@ -24,7 +24,7 @@ aks_service_principal_app_id = "831e0d3c-26ee-4ba5-a073-59402b1d442e"
 
 dns_prefix = "hw-aks-xd"
 
-aks_ssh_public_key = "C:\\work\\github\\container\\helloworld\\Scripts\\Env\\credential\\dev\\helloworld-dev-xd-k8s-ssh-key.pub"
+aks_ssh_public_key = "C:\\work\\github\\container\\helloworld\\scripts\\Env\\credential\\dev\\helloworld-dev-xd-k8s-ssh-key.pub"
 
 acr_name = "xddevacr"
 

@@ -8,7 +8,7 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -38,7 +38,7 @@ else {
 $aksSpn = az ad sp list --display-name $bootstrapValues.aks.servicePrincipal | ConvertFrom-Json
 if ($aksSpn) {
     LogInfo -Message "Remove aks service principal '$bootstrapValues.aks.servicePrincipal'..."
-    az ad sp delete --id $aksSpn.appId 
+    az ad sp delete --id $aksSpn.appId
 }
 else {
     LogInfo -Message "AKS service principal '$($bootstrapValues.aks.servicePrincipal)' is already removed."

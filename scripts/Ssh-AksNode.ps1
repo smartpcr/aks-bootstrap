@@ -9,7 +9,7 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while (-not (Test-Path (Join-Path $gitRootFolder ".git"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$scriptFolder = Join-Path $gitRootFolder "Scripts"
+$scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
@@ -24,8 +24,8 @@ SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 az aks get-credentials --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName | Out-Null
-$kubeContextName = "$(kubectl config current-context)" 
-LogStep -Step 1 -Message "You are now connected to kubenetes context: '$kubeContextName'" 
+$kubeContextName = "$(kubectl config current-context)"
+LogStep -Step 1 -Message "You are now connected to kubenetes context: '$kubeContextName'"
 
 
 LogStep -Step 2 "Retrieve ip config selected vm"
@@ -42,7 +42,7 @@ az network public-ip create -g $nodeResourceGroup -n $publicIpName | Out-Null
 az network nic ip-config update -g $nodeResourceGroup --nic-name $nicName --name $ipConfig.name --public-ip-address $publicIpName | Out-Null
 $pip = az network public-ip show -g $nodeResourceGroup -n $publicIpName | ConvertFrom-Json
 
-<# in case you lose ssh key file 
+<# in case you lose ssh key file
 $password = Read-Host "Enter user password"
 az vm user update `
     --resource-group $nodeResourceGroup `
@@ -51,10 +51,10 @@ az vm user update `
     --password $password
 
 #>
-  
+
 ssh "$($bootstrapValues.aks.adminUsername)@$($pip.ipAddress)"
 
 
-<# remove pip 
+<# remove pip
 az network public-ip delete -g $nodeResourceGroup -n $publicIpName
 #>

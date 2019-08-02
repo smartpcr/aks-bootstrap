@@ -4,7 +4,7 @@ function SyncHelmChartBetweenAcrs() {
         [string]$FromAcr = "oneesdevacr",
         [string]$ToSubscription = "RRD MSDN Premium",
         [string]$ToAcr = "rrdpdevacr",
-        [string]$scriptFolder = "C:\work\my\userspace\Scripts"
+        [string]$scriptFolder = "C:\work\my\userspace\scripts"
     )
 
     $chartsFolder = Join-Path $scriptFolder "charts"
@@ -53,7 +53,7 @@ function PushHelmChartToAcr() {
         [string]$ChartName = "prometheus-operator",
         [string]$TargetSubscription = "Compliance_Tools_Eng",
         [string]$TargetAcr = "oneesdevacr",
-        [string]$scriptFolder = "C:\work\my\userspace\Scripts"
+        [string]$scriptFolder = "C:\work\my\userspace\scripts"
     )
 
     LoginAzureAsUser -SubscriptionName $TargetSubscription | Out-Null
