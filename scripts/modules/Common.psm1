@@ -87,7 +87,7 @@ function Install-Docker() {
         # install docker-compose
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $dockerComposeVersion = "1.23.2"
-        $dockerComposeInstallFile = "$Env:ProgramFiles\docker\docker-compose.exe"
+        $dockerComposeInstallFile = "$env:ProgramFiles\docker\docker-compose.exe"
         Invoke-WebRequest "https://github.com/docker/compose/releases/download/$dockerComposeVersion/docker-compose-Windows-x86_64.exe" -UseBasicParsing -OutFile $dockerComposeInstallFile
     }
     else {
@@ -105,10 +105,10 @@ function Install-Docker() {
 function InstallDevSpace() {
     $devSpaceCmd = Get-Command devspace -ErrorAction SilentlyContinue
     if (!$devSpaceCmd) {
-        mkdir -Force "$Env:APPDATA\devspace" | Out-Null
+        mkdir -Force "$env:APPDATA\devspace" | Out-Null
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Tls,Tls11,Tls12';
-        Invoke-WebRequest -UseBasicParsing ((Invoke-WebRequest -URI "https://github.com/devspace-cloud/devspace/releases/latest" -UseBasicParsing).Content -replace "(?ms).*`"([^`"]*devspace-windows-amd64.exe)`".*", "https://github.com/`$1") -o $Env:APPDATA\devspace\devspace.exe;
-        & "$Env:APPDATA\devspace\devspace.exe" "install"; $env:Path = (Get-ItemProperty -Path HKCU:\Environment -Name Path).Path
+        Invoke-WebRequest -UseBasicParsing ((Invoke-WebRequest -URI "https://github.com/devspace-cloud/devspace/releases/latest" -UseBasicParsing).Content -replace "(?ms).*`"([^`"]*devspace-windows-amd64.exe)`".*", "https://github.com/`$1") -o $env:APPDATA\devspace\devspace.exe;
+        & "$env:APPDATA\devspace\devspace.exe" "install"; $env:Path = (Get-ItemProperty -Path HKCU:\Environment -Name Path).Path
     }
     else {
         Write-Host "devspace is already installed." -ForegroundColor Yellow

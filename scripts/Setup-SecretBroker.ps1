@@ -18,7 +18,7 @@ if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
 
-$envRootFolder = Join-Path $gitRootFolder "Env"
+$envRootFolder = Join-Path $gitRootFolder "env"
 $moduleFolder = Join-Path $scriptFolder "modules"
 $templateFolder = Join-Path $envRootFolder "templates"
 $secretBrokerTemplateFile = Join-Path $templateFolder "secret-broker.tpl"

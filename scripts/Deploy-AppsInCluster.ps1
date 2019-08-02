@@ -25,7 +25,7 @@ $yamlsFolder = Join-Path $ScriptFolder "yamls"
 if (-not (Test-Path $yamlsFolder)) {
     New-Item $yamlsFolder -ItemType Directory -Force | Out-Null
 }
-$envRootFolder = Join-Path $gitRootFolder "Env"
+$envRootFolder = Join-Path $gitRootFolder "env"
 $templateFolder = Join-Path $envRootFolder "templates"
 $moduleFolder = Join-Path $scriptFolder "modules"
 
