@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodoli"
+    [string] $SpaceName = "rrdp"
 )
 
 $ErrorActionPreference = "Stop"
@@ -69,17 +69,12 @@ $aksClusters = az aks list `
 if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
     LogInfo -Message "Creating AKS Cluster '$($bootstrapValues.aks.clusterName)'..."
     $aksClusterServicePrincipals = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
-    if ($null -ne $aksClusterServicePrincipals -and $aksClusterServicePrincipals.Count -gt 0) {
-        Write-Warning "Service principal '$($bootstrapValues.aks.clusterName)' already created, but aks cluster is not."
-        $removeServicePrincipal = Read-Host "Removing existing orphaned service principal (y/N)?"
-        if ($removeServicePrincipal -ieq "Y") {
-            $aksClusterServicePrincipals | ForEach-Object {
-                $existingSpnAppId = $_.appId
-                LogInfo -Message "Removing service principal '$($bootstrapValues.aks.clusterName)' ($($existingSpnAppId))"
-                az ad sp delete --id $existingSpnAppId | Out-Null
-            }
-        }
+    if ($null -eq $aksClusterServicePrincipals -or $aksClusterServicePrincipals.Count -ne 1) {
+        throw "Service principal '$($bootstrapValues.aks.clusterName)' is not created or have duplicates"
     }
+    $aksClusterSpn = $aksClusterServicePrincipals[0]
+    $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+    $aksClusterSpnPwd = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret | ConvertFrom-Json
 
     LogInfo -Message "AKS cluster creation started, this would take 10 - 30 min, Go grab a coffee"
 
@@ -122,6 +117,7 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         Get-Content $terraformVarFile -Raw | ConvertFrom-Yaml -Ordered
         #TODO: implement teraform install
     }
+
     $aks = az aks create `
         --resource-group $bootstrapValues.aks.resourceGroup `
         --name $bootstrapValues.aks.clusterName `
@@ -132,6 +128,8 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         --dns-name-prefix $bootstrapValues.aks.dnsPrefix `
         --node-count $bootstrapValues.aks.nodeCount `
         --node-vm-size $bootstrapValues.aks.vmSize `
+        --service-principal $aksClusterSpn.appId `
+        --client-secret $aksClusterSpnPwd.value `
         --aad-server-app-id $aksSpn.appId `
         --aad-server-app-secret $aksSpnPwd `
         --aad-client-app-id $aksClientApp.appId `

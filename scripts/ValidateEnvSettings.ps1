@@ -120,11 +120,10 @@ $spnNames | ForEach-Object {
     if (!$sp) {
         try {
             LogInfo -Message "Try creating spn '$spnName'..."
-            az ad sp create-for-rbac `
+            $sp = az ad sp create-for-rbac `
                 --name $spnName `
-                --password "fake-password" `
                 --role="Contributor" `
-                --scopes=$scopes | Out-Null
+                --scopes=$scopes | ConvertFrom-Json
 
             LogInfo -Message "Clean up spn '$spnName'..."
             $sp = az ad sp list --display-name $spnName | ConvertFrom-Json

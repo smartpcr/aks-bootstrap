@@ -122,5 +122,27 @@ if ($bootstrapValues.global.components.aks -eq $true) {
     Get-OrCreateAksClientApp -EnvRootFolder $envRootFolder -EnvName $EnvName -SpaceName $SpaceName -ForceResetSpn $bootstrapValues.aks.forceResetSpn | Out-Null
 }
 
+
+LogStep -Message "Ensure aks cluster service principal is created"
+[array]$aksClusterServicePrincipals = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+$aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+if ($null -eq $aksClusterServicePrincipals -or $aksClusterServicePrincipals.Count -eq 0) {
+    $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+    $scopes = "/subscriptions/$($azureAccount.id)/resourceGroups/$($bootstrapValues.aks.resourceGroup)"
+    $aksClusterSpn = az ad sp create-for-rbac `
+        --name $bootstrapValues.aks.clusterName `
+        --role="Contributor" `
+        --scopes=$scopes | ConvertFrom-Json
+    $aksClusterSpnPwd = $aksClusterSpn.password
+    az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd | Out-Null
+}
+elseif ($aksClusterServicePrincipals.Count -gt 1) {
+    throw "Duplicated service principal exists with the same name: '$($bootstrapValues.aks.clusterName)'"
+}
+else {
+    $aksClusterSpn = $aksClusterServicePrincipals[0]
+}
+LogInfo "AKS Cluster spn: $($aksClusterSpn.appId), password stored in: $($aksClusterSpnPwdSecret)"
+
 # connect as service principal
 LoginAsServicePrincipal -EnvName $EnvName -SpaceName $SpaceName -EnvRootFolder $envRootFolder

@@ -109,19 +109,21 @@ function Get-OrCreateServicePrincipalUsingPassword {
         [string] $VaultName
     )
 
-    $servicePrincipalPwd = Get-OrCreatePasswordInVault2 -VaultName $VaultName -secretName $ServicePrincipalPwdSecretName
     $spFound = az ad sp list --display-name $ServicePrincipalName | ConvertFrom-Json
     if ($spFound) {
+        $servicePrincipalPwd = Get-OrCreatePasswordInVault2 -VaultName $VaultName -secretName $ServicePrincipalPwdSecretName
         LogInfo -Message "Service principal '$ServicePrincipalName' is already installed, reset its password..."
         az ad sp credential reset --name $ServicePrincipalName --password $servicePrincipalPwd.value
         return $spFound
     }
 
     LogInfo -Message "Creating service principal '$ServicePrincipalName' with password..."
-    az ad sp create-for-rbac `
-        --name $ServicePrincipalName `
-        --password $($servicePrincipalPwd.value) | Out-Null
-    $sp = az ad sp list --display-name $ServicePrincipalName | ConvertFrom-Json
+    $sp = az ad sp create-for-rbac `
+        --name $ServicePrincipalName | ConvertFrom-Json
+
+    LogInfo -Message "Store spn password to key vault"
+    az keyvault secret set --vault-name $VaultName --name $ServicePrincipalPwdSecretName --value $sp.password | Out-Null
+
     return $sp
 }
 
@@ -139,7 +141,7 @@ function Get-OrCreateAksServicePrincipal {
     $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -EnvRootFolder $EnvRootFolder -SpaceName $SpaceName
     $templatesFolder = Join-Path $EnvRootFolder "templates"
     $spnAuthJsonFile = Join-Path $templatesFolder "aks-spn-auth.json"
-    $servicePrincipalPwd = Get-OrCreatePasswordInVault2 -VaultName $VaultName -secretName $ServicePrincipalPwdSecretName
+
     $aksRg = az group show --name $bootstrapValues.aks.resourceGroup | ConvertFrom-Json
     $spFound = az ad sp list --display-name $ServicePrincipalName | ConvertFrom-Json
 
@@ -147,6 +149,7 @@ function Get-OrCreateAksServicePrincipal {
         LogInfo -Message "Service principal '$ServicePrincipalName' is already created."
         if ($ForceResetSpn) {
             LogInfo -Message "Resetting password for service principal '$ServicePrincipalName'..."
+            $servicePrincipalPwd = Get-OrCreatePasswordInVault2 -VaultName $VaultName -secretName $ServicePrincipalPwdSecretName
             az ad sp credential reset --name $ServicePrincipalName --password $servicePrincipalPwd.value | Out-Null
         }
         else {
@@ -185,13 +188,13 @@ function Get-OrCreateAksServicePrincipal {
     $scopes = "/subscriptions/$subscriptionId/resourceGroups/$($rgName)"
 
     LogInfo -Message "Granting spn '$ServicePrincipalName' 'Contributor' role to resource group '$rgName'"
-    az ad sp create-for-rbac `
+    $aksSpn = az ad sp create-for-rbac `
         --name $ServicePrincipalName `
-        --password $($servicePrincipalPwd.value) `
         --role="Contributor" `
         --scopes=$scopes | Out-Null
 
-    $aksSpn = az ad sp list --display-name $ServicePrincipalName | ConvertFrom-Json
+    LogInfo -Message "Store aks server spn password to key vault"
+    az keyvault secret set --vault-name $VaultName --name $ServicePrincipalPwdSecretName --value $aksSpn.password | Out-Null
 
     LogInfo -Message "Grant required resource access for aad app..."
     az ad app update --id $aksSpn.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
@@ -268,6 +271,10 @@ function LoginAzureAsUser {
 
     $azAccount = az account show | ConvertFrom-Json
     if ($null -eq $azAccount -or $azAccount.name -ine $SubscriptionName) {
+        az login | Out-Null
+        az account set --subscription $SubscriptionName | Out-Null
+    }
+    elseif ($azAccount.user.type -eq "servicePrincipal") {
         az login | Out-Null
         az account set --subscription $SubscriptionName | Out-Null
     }
