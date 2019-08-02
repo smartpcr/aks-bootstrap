@@ -36,7 +36,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-LetsEncrypt"
 LogTitle -Message "Setting up Lets-Encrypt for environment '$EnvName/$SpaceName'..."
 
 
-LogStep -Step 1 -Message "Login azure and connect to aks ..."
+LogStep -Message "Login azure and connect to aks ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
@@ -44,7 +44,7 @@ $aks = az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $b
 $bootstrapValues.aks["fqdn"] = $aks.fqdn
 
 
-LogStep -Step 2 -Message "Retrieving aks cluster spn '$($bootstrapValues.aks.clusterName)' and save its password as k8s secret..."
+LogStep -Message "Retrieving aks cluster spn '$($bootstrapValues.aks.clusterName)' and save its password as k8s secret..."
 $aksClusterSpn = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
 if (!$aksClusterSpn) {
     throw "AKS cluster service principal '$($bootstrapValues.aks.clusterName)' is not setup yet"
@@ -90,7 +90,7 @@ else {
 
 
 $clusterIssuerName = "letsencrypt"
-LogStep -Step 3 -Message "Deploy wildcard cluster issuer '$clusterIssuerName'..."
+LogStep -Message "Deploy wildcard cluster issuer '$clusterIssuerName'..."
 $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-prod.yaml"
 if ($null -ne $bootstrapValues.dns["letsencrypt"] -and $bootstrapValues.dns.letsencrypt.issuer -eq "staging") {
     $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-staging.yaml"
@@ -106,7 +106,7 @@ if ($null -ne $existingClusterIssuerFound) {
 kubectl apply -f $clusterIssuerYamlFile
 
 
-LogStep -Step 4 -Message "Deploy wildcard certificate '$($bootstrapValues.dns.sslCert)'..."
+LogStep -Message "Deploy wildcard certificate '$($bootstrapValues.dns.sslCert)'..."
 $existingSslSecretFound = kubectl get secret | grep $bootstrapValues.dns.sslCert
 if ($null -ne $existingSslSecretFound) {
     kubectl delete secret $bootstrapValues.dns.sslCert

@@ -35,13 +35,13 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-CertManager"
 LogTitle -Message "Setting up cert-manager, lets-encrypt to automate wildcard ssl cert creation and trust in environment '$EnvName/$SpaceName'..."
 
 
-LogStep -Step 1 -Message "Login azure and connect to aks ..."
+LogStep -Message "Login azure and connect to aks ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-# LogStep -Step 2 -Message "Creating wildcard tls cert"
+# LogStep -Message "Creating wildcard tls cert"
 # $sslCertSecretBundle = az keyvault secret show --name $bootstrapValues.dns.sslCert --vault-name $bootstrapValues.kv.name | ConvertFrom-Json
 # if (!$sslCertSecretBundle) {
 #     New-WildcardSslCert `
@@ -53,7 +53,7 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 # }
 
 
-LogStep -Step 2 -Message "Installing cert-manager..."
+LogStep -Message "Installing cert-manager..."
 LogInfo -Message "Clearing previous installation..."
 $existingHelmInstalation = helm list | grep cert-manager
 if ($null -ne $existingHelmInstalation) {
@@ -100,7 +100,7 @@ kubectl delete Secret example-com-tls
 #>
 
 
-# LogStep -Step 3 -Message "Create cluster issuer using letsencrypt"
+# LogStep -Message "Create cluster issuer using letsencrypt"
 # $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-prod.yaml"
 # if ($null -ne $bootstrapValues.dns["letsencrypt"] -and $bootstrapValues.dns.letsencrypt.issuer -eq "staging") {
 #     $clusterIssuerTemplateFile = Join-Path $templatesFolder "lets-encrypt-clusterissuer-staging.yaml"
@@ -112,7 +112,7 @@ kubectl delete Secret example-com-tls
 # kubectl apply -f $clusterIssuerYamlFile
 
 
-# LogStep -Step 4 -Message "Testing tls with sample app"
+# LogStep -Message "Testing tls with sample app"
 # helm repo add azure-samples https://azure-samples.github.io/helm-charts/
 # helm repo update
 # helm install --name aks-helloworld --namespace ingress-basic azure-samples/aks-helloworld

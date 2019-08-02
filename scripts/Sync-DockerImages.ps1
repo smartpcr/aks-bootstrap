@@ -29,7 +29,7 @@ Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-DockerImages"
 
-LogStep -Step 1 -Message "Get credential for '$($SourceSubscription)/$($SourceAcrName)'..."
+LogStep -Message "Get credential for '$($SourceSubscription)/$($SourceAcrName)'..."
 LoginAzureAsUser -SubscriptionName $SourceSubscription | Out-Null
 $SourceAcrSecret = "$SourceAcrName-credentials"
 LogInfo -Message "Setting access to acr '$SourceAcrName'..."
@@ -42,11 +42,11 @@ $SourceAcrCredential = SetAcrCredential `
     -SpnPwdSecret $null
 
 
-LogStep -Step 2 "Getting all images from '$SourceAcrName'..."
+LogStep "Getting all images from '$SourceAcrName'..."
 $images = GetAllDockerImages -AcrSecret $SourceAcrSecret -VaultName $SourceVaultName
 
 
-LogStep -Step 3 -Message "Get credential for '$($TargetSubscription)/$($TargetAcrName)'..."
+LogStep -Message "Get credential for '$($TargetSubscription)/$($TargetAcrName)'..."
 LoginAzureAsUser -SubscriptionName $TargetSubscription | Out-Null
 $TargetAcrSecret = "$TargetAcrName-credentials"
 LogInfo -Message "Setting access to acr '$TargetAcrName'..."
@@ -59,12 +59,12 @@ $TargetAcrCredential = SetAcrCredential `
     -SpnPwdSecret $null
 
 
-LogStep -Step 4 "Sync all images from '$SourceAcrName'..."
+LogStep "Sync all images from '$SourceAcrName'..."
 $totalImageCount = $images.Count
 $imagePushed = 0
 $images | ForEach-Object {
     $ImageName = $_
-    LogStep -Step 4 "Sync image '$ImageName'..., $imagePushed/$totalImageCount"
+    LogStep "Sync image '$ImageName'..., $imagePushed/$totalImageCount"
     SyncDockerImage `
         -SourceAcrName $SourceAcrName `
         -SourceAcrCredential $SourceAcrCredential `
@@ -77,7 +77,7 @@ $images | ForEach-Object {
 }
 
 
-LogStep -Step 5 -Message "Sync older version of secret-broker..."
+LogStep -Message "Sync older version of secret-broker..."
 $ImageName = "1es/secret-broker"
 $Tag = "394719"
 SyncDockerImageWithTag `

@@ -23,7 +23,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ApplicationInsig
 LogTitle -Message "Setting up App Insights for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retriing app insights settings..."
+LogStep -Message "Login and retriing app insights settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 $existingAppInsights = az resource list --resource-group $bootstrapValues.appInsights.resourceGroup --name $bootstrapValues.appInsights.name | ConvertFrom-Json

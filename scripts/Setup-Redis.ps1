@@ -28,11 +28,11 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-Redis"
 LogTitle -Message "Setting up CosmosDB for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
+LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 2 -Message "Ensure redis '$($bootstrapValues.redis.name)' is created..."
+LogStep -Message "Ensure redis '$($bootstrapValues.redis.name)' is created..."
 $redis = az redis show --name $bootstrapValues.redis.name --resource-group $bootstrapValues.redis.resourceGroup | ConvertFrom-Json
 if ($null -eq $redis) {
     $redis = az redis create `

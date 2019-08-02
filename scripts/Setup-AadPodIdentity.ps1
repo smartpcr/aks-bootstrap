@@ -34,7 +34,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AadPodIdentity"
 LogTitle -Message "Install aad pod identity for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve settings..."
+LogStep -Message "Login and retrieve settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
@@ -42,6 +42,6 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 
 
 if ($bootstrapValues.aks.keyVaultAccess -contains "podIdentity") {
-    LogStep -Step 2 -Message "Deploy aad-pod-identity infra.."
+    LogStep -Message "Deploy aad-pod-identity infra.."
     kubectl apply -f https://raw.githubusercontent.com/Azure/aad-pod-identity/master/deploy/infra/deployment-rbac.yaml
 }

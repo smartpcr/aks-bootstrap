@@ -32,7 +32,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AksCluster"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
+LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 
@@ -49,7 +49,7 @@ $aksSpnPwd = "$(az keyvault secret show --vault-name $bootstrapValues.kv.name --
 az group create --name $bootstrapValues.aks.resourceGroup --location $bootstrapValues.aks.location | Out-Null
 
 
-LogStep -Step 2 -Message "Ensure SSH key is present for linux vm access..."
+LogStep -Message "Ensure SSH key is present for linux vm access..."
 EnsureSshCert `
     -VaultName $bootstrapValues.kv.name `
     -CertName $bootstrapValues.aks.ssh_private_key `
@@ -59,7 +59,7 @@ $aksCertPublicKeyFile = Join-Path $envCredentialFolder "$($bootstrapValues.aks.s
 $sshKeyData = Get-Content $aksCertPublicKeyFile
 
 
-LogStep -Step 3 -Message "Ensure AKS cluster '$($bootstrapValues.aks.clusterName)' within resource group '$($bootstrapValues.aks.resourceGroup)' is created..."
+LogStep -Message "Ensure AKS cluster '$($bootstrapValues.aks.clusterName)' within resource group '$($bootstrapValues.aks.resourceGroup)' is created..."
 
 # az aks delete `
 #     --resource-group $bootstrapValues.aks.resourceGroup `
@@ -156,7 +156,7 @@ else {
 }
 
 
-LogStep -Step 4 -Message "Manually add aks cluster spn client secret..."
+LogStep -Message "Manually add aks cluster spn client secret..."
 $aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
 $aksClusterSpnPwd = Read-Host "Enter password for service principal $($aksClusterSpnClientId): '$($bootstrapValues.aks.clusterName)'"
 $aksClusterSpnPwd = $aksClusterSpnPwd.Replace("-", "`-").Replace("$","`$")
@@ -173,7 +173,7 @@ check credential file cached here and make sure it's the same:
     ls -la $HOME/.azure/aksServicePrincipal.json
 #>
 
-LogStep -Step 4 -Message "Set AKS context..."
+LogStep -Message "Set AKS context..."
 # rm -rf /Users/xiaodongli/.kube/config
 az aks get-credentials --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --admin
 LogInfo -Message "Grant dashboard access..."
@@ -270,14 +270,14 @@ $kubeContextName = "$(kubectl config current-context)"
 LogInfo -Message "You are now connected to kubenetes context: '$kubeContextName'"
 
 
-LogStep -Step 5 -Message "Setup helm integration..."
+LogStep -Message "Setup helm integration..."
 # we can also apply file env/templates/helm-rbac.yaml
 kubectl -n kube-system create sa tiller
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --upgrade
 
 
-LogStep -Step 6 -Message "Set addons...(will take a few minutes)"
+LogStep -Message "Set addons...(will take a few minutes)"
 
 LogInfo -Message "Enable monitoring on AKS cluster..."
 az aks enable-addons `
@@ -301,7 +301,7 @@ az aks enable-addons `
     --addons http_application_routing | Out-Null
 
 
-LogStep -Step 7 -Message "Ensure aks service principal has access to ACR..."
+LogStep -Message "Ensure aks service principal has access to ACR..."
 $acrName = $bootstrapValues.acr.name
 $acrResourceGroup = $bootstrapValues.acr.resourceGroup
 $acrFound = "$(az acr list -g $acrResourceGroup --query ""[?contains(name, '$acrName')]"" --query [].name -o tsv)"
@@ -359,7 +359,7 @@ $allNamespaces | ForEach-Object {
 }
 
 
-LogStep -Step 8 -Message "Create k8s secrets..."
+LogStep -Message "Create k8s secrets..."
 if ($bootstrapValues.aks.keyVaultAccess -contains "podIdentity") {
     LogInfo -Message "Setting up pod id
     entity..."
@@ -390,7 +390,7 @@ if ($null -ne $bootstrapValues.aks.certs -and $bootstrapValues.aks.certs.Count -
 }
 
 
-LogStep -Step 9 -Message "Bootstrap keyvault access..."
+LogStep -Message "Bootstrap keyvault access..."
 if ($bootstrapValues.aks.keyVaultAccess -contains "secretBroker") {
     LogInfo -Message "Install secret broker to k8s..."
     & "$scriptFolder\Setup-SecretBroker.ps1" -EnvName $EnvName -SpaceName $SpaceName -UseOldImage $false
@@ -417,7 +417,7 @@ if ($bootstrapValues.aks.keyVaultAccess -contains "podIdentity") {
 }
 
 
-LogStep -Step 11 -Message "Setup geneva hot path..."
+LogStep -Message "Setup geneva hot path..."
 if ($bootstrapValues.aks.metrics -contains "geneva") {
     LogInfo "Setting up geneva mdm..."
     & "$scriptFolder\Setup-GenevaMetrics.ps1" -EnvName $EnvName -SpaceName $SpaceName
@@ -427,7 +427,7 @@ else {
 }
 
 
-LogStep -Step 12 -Message "Setup geneva warm path..."
+LogStep -Message "Setup geneva warm path..."
 if ($bootstrapValues.aks.logging -contains "geneva") {
     LogInfo "Setting up geneva mds..."
     & "$scriptFolder\Setup-GenevaService.ps1" -EnvName $EnvName -SpaceName $SpaceName
@@ -437,7 +437,7 @@ else {
 }
 
 
-LogStep -Step 13 -Message "Setup k8s ingress..."
+LogStep -Message "Setup k8s ingress..."
 if ($bootstrapValues.aks.ingress -contains "nginx") {
     LogInfo "Setting up k8s ingress ..."
     & "$scriptFolder\Setup-DNS.ps1" -EnvName $EnvName -SpaceName $SpaceName
@@ -448,13 +448,13 @@ else {
 
 
 # if ($bootstrapValues.aks.useCertManager) {
-#     LogStep -Step 14 -Message "Setup cert-manager..."
+#     LogStep -Message "Setup cert-manager..."
 #     & "$scriptFolder\Setup-CertManager.ps1" -EnvName $EnvName -SpaceName $SpaceName
 #     & "$scriptFolder\Setup-LetsEncrypt.ps1" -EnvName $EnvName -SpaceName $SpaceName
 # }
 
 
-LogStep -Step 15 -Message "Setup monitoring infrastructure..."
+LogStep -Message "Setup monitoring infrastructure..."
 if ($bootstrapValues.aks.metrics -contains "prometheus" -or $bootstrapValues.aks.logging -contains "prometheus") {
     LogInfo "Setting up prometheus..."
     & "$scriptFolder\Setup-Prometheus.ps1" -EnvName $EnvName -SpaceName $SpaceName

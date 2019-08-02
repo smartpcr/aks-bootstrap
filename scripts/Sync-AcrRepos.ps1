@@ -27,7 +27,7 @@ Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-AcrRepos"
 LogTitle -Message "Setting Up Container Registry for Environment '$EnvName'"
 
-LogStep -Step 1 -Message "Retrieving environment settings for '$EnvName'..."
+LogStep -Message "Retrieving environment settings for '$EnvName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 $vaultName = $bootstrapValues.kv.name
@@ -102,13 +102,13 @@ $sourceAcrSettings | ForEach-Object {
     $AcrName = $_.AcrName
     $AcrCredential = $_.Credential
     $AcrSecret = "$AcrName-credentials"
-    LogStep -Step 2 "Getting all images from '$AcrName' to '$($bootstrapValues.acr.name)'"
+    LogStep "Getting all images from '$AcrName' to '$($bootstrapValues.acr.name)'"
     $images = GetAllDockerImages -AcrSecret $AcrSecret -VaultName $vaultName
     $totalImageCount = $images.Count
     $imagePushed = 0
     $images | ForEach-Object {
         $ImageName = $_
-        LogStep -Step 3 "Sync image '$ImageName'..., $imagePushed/$totalImageCount"
+        LogStep "Sync image '$ImageName'..., $imagePushed/$totalImageCount"
         SyncDockerImage `
             -SourceAcrName $AcrName `
             -SourceAcrCredential $AcrCredential `

@@ -30,7 +30,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-CosmosDb"
 LogTitle -Message "Setting up CosmosDB for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
+LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
@@ -78,7 +78,7 @@ if ($bootstrapValues.global.components.cosmosdb.graphDb) {
 
 $cosmosDbSettings | ForEach-Object {
     $cosmosDbSetting = $_
-    LogStep -Step 2 "Ensure docdb is created..."
+    LogStep "Ensure docdb is created..."
     LogInfo -Message "Ensure account '$($cosmosDbSetting.AccountName)' is created..."
     EnsureCosmosDbAccount `
         -AccountName $cosmosDbSetting.AccountName `

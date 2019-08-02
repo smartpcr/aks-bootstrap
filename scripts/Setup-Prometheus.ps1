@@ -33,7 +33,7 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -AsAdmin -SpaceName $SpaceName
 
 
-LogStep -Step 2 -Message "Install prometheus-operator..."
+LogStep -Message "Install prometheus-operator..."
 $nsMonitorYaml = @"
 apiVersion: v1
 kind: Namespace

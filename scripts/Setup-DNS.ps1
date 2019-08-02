@@ -35,7 +35,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-DNS"
 LogTitle -Message "Setting up DNS records/zone for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login azure and connect to aks ..."
+LogStep -Message "Login azure and connect to aks ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
@@ -43,7 +43,7 @@ $aks = az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $b
 $bootstrapValues.aks["fqdn"] = $aks.fqdn
 
 
-LogStep -Step 2 -Message "Make sure nginx is deployed, which is required by external-dns"
+LogStep -Message "Make sure nginx is deployed, which is required by external-dns"
 LogInfo -Message "Create K8S secret for docker registry in namespace 'ingress-nginx'..."
 $acr = az acr show -g $bootstrapValues.acr.resourceGroup -n $bootstrapValues.acr.name | ConvertFrom-Json
 az acr login -n $bootstrapValues.acr.name
@@ -81,7 +81,7 @@ $aksSpnPwd = "$(az keyvault secret show --vault-name $bootstrapValues.kv.name --
 $dnsRg = az group create --name $bootstrapValues.aks.resourceGroup --location $bootstrapValues.aks.location | ConvertFrom-Json
 
 
-LogStep -Step 2 -Message "create k8s secret to store dns credential..."
+LogStep -Message "create k8s secret to store dns credential..."
 $dnsSecret = @{
     tenantId        = $azAccount.tenantId
     subscriptionId  = $azAccount.id
@@ -92,7 +92,7 @@ $dnsSecret = @{
 SetSecret -Name "external-dns-config-file" -Key "azure.json" -Value $dnsSecret -Namespace "default" -ScriptFolder $scriptFolder -EnvRootFolder $envRootFolder
 
 
-LogStep -Step 3 -Message "Creating dns zone in azure..."
+LogStep -Message "Creating dns zone in azure..."
 az group create --name $bootstrapValues.dns.resourceGroup --location $bootstrapValues.global.location | Out-Null
 [array]$dnsZonesFound = az network dns zone list -g $bootstrapValues.dns.resourceGroup --query "[?name=='$($bootstrapValues.dns.domain)']" | ConvertFrom-Json
 if ($null -eq $dnsZonesFound -or $dnsZonesFound.Length -eq 0) {
@@ -104,7 +104,7 @@ else {
 }
 
 
-LogStep -Step 4 -Message "Add CAA record to allow letsencrypt perform authorization..."
+LogStep -Message "Add CAA record to allow letsencrypt perform authorization..."
 $caaRecords = az network dns record-set caa list `
     --resource-group $bootstrapValues.dns.resourceGroup `
     --zone-name $bootstrapValues.dns.domain | ConvertFrom-Json
@@ -124,7 +124,7 @@ else {
 }
 
 
-LogStep -Step 5 -Message "Granting aks spn '$($bootstrapValues.aks.clusterName)' contributor access to dns zone '$($bootstrapValues.dns.domain)'"
+LogStep -Message "Granting aks spn '$($bootstrapValues.aks.clusterName)' contributor access to dns zone '$($bootstrapValues.dns.domain)'"
 $existingAssignments = az role assignment list --role "Reader" --assignee $aksClusterSpn.appId --scope $dnsRg.id | ConvertFrom-Json
 if ($existingAssignments.Count -eq 0) {
     az role assignment create --role "Reader" --assignee $aksClusterSpn.appId --scope $dnsRg.id | Out-Null
@@ -135,7 +135,7 @@ if ($existingAssignments.Count -eq 0) {
 }
 
 
-LogStep -Step 6 -Message "Setup k8s external-dns..."
+LogStep -Message "Setup k8s external-dns..."
 $externalDnsTemplateFile = Join-Path $templatesFolder "external-dns.yaml"
 $externalDnsTemplate = Get-Content $externalDnsTemplateFile -Raw
 $externalDnsTemplate = Set-YamlValues -valueTemplate $externalDnsTemplate -settings $bootstrapValues

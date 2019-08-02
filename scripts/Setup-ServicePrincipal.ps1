@@ -37,11 +37,11 @@ LogTitle "Setting Up Service Principal for Environment $EnvName"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 
 # login and set subscription
-LogStep -Step 1 -Message "Login to azure and set subscription to '$($bootstrapValues.global.subscriptionName)'..."
+LogStep -Message "Login to azure and set subscription to '$($bootstrapValues.global.subscriptionName)'..."
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 
 # create service principal (SPN) for cluster provision
-LogStep -Step 2 -Message "Creating service principal '$($bootstrapValues.global.servicePrincipal)'..."
+LogStep -Message "Creating service principal '$($bootstrapValues.global.servicePrincipal)'..."
 $sp = az ad sp list --display-name $bootstrapValues.global.servicePrincipal | ConvertFrom-Json
 if ($null -eq $sp -or $sp.Length -eq 0) {
     LogInfo -Message "Creating service principal with name '$($bootstrapValues.global.servicePrincipal)'..."
@@ -75,7 +75,7 @@ else {
 
 
 if ($bootstrapValues.global.components.aks -eq $true) {
-    LogStep -Step 3 -Message "Ensuring AKS service principal '$($bootstrapValues.aks.servicePrincipal)' is created..."
+    LogStep -Message "Ensuring AKS service principal '$($bootstrapValues.aks.servicePrincipal)' is created..."
     az group create --name $bootstrapValues.aks.resourceGroup --location $bootstrapValues.aks.location | Out-Null
 
     Get-OrCreateAksServicePrincipal `

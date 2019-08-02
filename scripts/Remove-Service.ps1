@@ -38,12 +38,12 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Remove-Service"
 
 LogTitle -Message "Building and deploy service '$ServiceName' to '$EnvName/$SpaceName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
-LogStep -Step 1 -Message "Login to azure and aks..."
+LogStep -Message "Login to azure and aks..."
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-LogStep -Step 2 -Message "Get service setting..."
+LogStep -Message "Get service setting..."
 $serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
 $serviceType = "api"
 $serviceTemplates.services | ForEach-Object {
@@ -54,7 +54,7 @@ $serviceTemplates.services | ForEach-Object {
 
 
 if ($IsLocal) {
-    LogStep -Step 3 -Message "Stop docker image on local"
+    LogStep -Message "Stop docker image on local"
     # Remove stopped containers
     (& docker ps --quiet --filter 'status=exited' ) | Foreach-Object {
         & docker rm $_ | out-null
@@ -67,7 +67,7 @@ if ($IsLocal) {
     Start-Process powershell "docker-compose -f $dockerComposeFile down $ServiceName"
 }
 else {
-    LogStep -Step 3 -Message  "Remove deployment '$ServiceName'..."
+    LogStep -Message  "Remove deployment '$ServiceName'..."
     if ($serviceType -eq "job") {
         kubectl delete cronjob $ServiceName
     }

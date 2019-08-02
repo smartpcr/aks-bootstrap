@@ -36,13 +36,13 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-GenevaService"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and populate azure settings..."
+LogStep -Message "Login and populate azure settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-LogStep -Step 2 -Message "Retrieving AKS settings..."
+LogStep -Message "Retrieving AKS settings..."
 $aksSpn = az ad app list --display-name $bootstrapValues.aks.servicePrincipal | ConvertFrom-Json
 $aksSpnPwd = az keyvault secret show --name $bootstrapValues.aks.servicePrincipalPassword --vault-name $bootstrapValues.kv.name | ConvertFrom-Json
 $acrName = $bootstrapValues.acr.name
@@ -90,7 +90,7 @@ $azureSettingTemplate = Get-Content -Raw $azureSettingTemplateFile
 $azureSettingJson = Set-YamlValues -valueTemplate $azureSettingTemplate -settings $bootstrapValues
 $azureSettingJson | Out-File (Join-Path $adCredsFolder "azure.json") -Encoding utf8
 
-LogStep -Step 3 -Message "Copy and transform conf files"
+LogStep -Message "Copy and transform conf files"
 $genevaWarmpathContainers = @("mdm", "mdmstatsd", "mdsd", "fluentd", "azsecpack", "janitor")
 $genevaWarmpathContainers | ForEach-Object {
     $container = $_
@@ -113,7 +113,7 @@ $genevaWarmpathContainers | ForEach-Object {
 }
 
 
-LogStep -Step 4 -Message "Generate yaml file"
+LogStep -Message "Generate yaml file"
 $genevaServiceTemplateFile = Join-Path $templatesFolder "geneva-service.tpl"
 $serviceYamlTemplate = Get-Content $genevaServiceTemplateFile -Raw
 $serviceYaml = Set-YamlValues -valueTemplate $serviceYamlTemplate -settings $bootstrapValues
@@ -122,5 +122,5 @@ $serviceYaml | Out-File $genevaServiceYamlFile -Encoding utf8
 UpdateYamlWithEmbeddedFunctions -YamlFile $genevaServiceYamlFile
 
 
-LogStep -Step 4 -Message "Apply file to k8s..."
+LogStep -Message "Apply file to k8s..."
 kubectl apply -f $genevaServiceYamlFile

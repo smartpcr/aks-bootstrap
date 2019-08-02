@@ -43,7 +43,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-SecretBroker"
 LogTitle -Message "Setting up secret broker for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve settings..."
+LogStep -Message "Login and retrieve settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
@@ -55,7 +55,7 @@ else {
     $bootstrapValues.geneva.secretBroker.image.tag = "638876"
 }
 
-LogStep -Step 2 -Message "Setting secret broker yaml file and apply to k8s"
+LogStep -Message "Setting secret broker yaml file and apply to k8s"
 $secretBrokerYamlFile = Join-Path $yamlsFolder "secret-broker.yaml"
 Copy-Item $secretBrokerTemplateFile -Destination $secretBrokerYamlFile -Force | Out-Null
 ReplaceValuesInYamlFile -YamlFile $secretBrokerYamlFile -PlaceHolder "acr.name" -Value $bootstrapValues.acr.name

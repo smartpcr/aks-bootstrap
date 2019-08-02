@@ -36,7 +36,7 @@ $terraformFolder = Join-Path $envRootFolder "terraform"
 $testFolder = Join-Path $terraformFolder "test"
 Set-Location $testFolder
 
-LogStep -Step 1 -Message "Setting up resource group..."
+LogStep -Message "Setting up resource group..."
 terraform init
 terraform plan
 terraform apply

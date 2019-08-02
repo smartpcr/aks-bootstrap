@@ -34,13 +34,13 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-WeaveworksFlux"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
+LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-LogStep -Step 2 -Message "Retrieving github repo '$($bootstrapValues.flux.repo)' deployment key..."
+LogStep -Message "Retrieving github repo '$($bootstrapValues.flux.repo)' deployment key..."
 $sshKeyFile = Join-Path $credentialFolder "git-$($bootstrapValues.flux.user)"
 if (Test-Path $sshKeyFile) {
     Remove-Item $sshKeyFile -Force

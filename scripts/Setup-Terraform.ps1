@@ -25,10 +25,10 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-Terraform"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 1 -Message "Ensure terraform resource group '$($bootstrapValues.terraform.resourceGroup)' is created..."
+LogStep -Message "Ensure terraform resource group '$($bootstrapValues.terraform.resourceGroup)' is created..."
 az group create --name $bootstrapValues.terraform.resourceGroup --location $bootstrapValues.terraform.location | Out-Null
 
-LogStep -Step 2 -Message "Ensure terraform service principal '$($bootstrapValues.terraform.servicePrincipal)' is created..."
+LogStep -Message "Ensure terraform service principal '$($bootstrapValues.terraform.servicePrincipal)' is created..."
 Get-OrCreateAksServicePrincipal `
     -ServicePrincipalName $bootstrapValues.terraform.servicePrincipal `
     -ServicePrincipalPwdSecretName $bootstrapValues.terraform.servicePrincipalSecretName `
@@ -60,7 +60,7 @@ if ($existingAssignments.Count -eq 0) {
         --resource-group $bootstrapValues.terraform.resourceGroup | Out-Null
 }
 
-LogStep -Step 2 -Message "Creating storage '$($bootstrapValues.terraform.stateStorageAccountName)' for terraform state..."
+LogStep -Message "Creating storage '$($bootstrapValues.terraform.stateStorageAccountName)' for terraform state..."
 $storageAccount = az storage account show --resource-group $bootstrapValues.terraform.resourceGroup --name $bootstrapValues.terraform.stateStorageAccountName | ConvertFrom-Json
 if (!$storageAccount) {
     az storage account create `

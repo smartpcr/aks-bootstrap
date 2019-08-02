@@ -42,18 +42,18 @@ Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Deploy-AppsInCluster"
 LogTitle -Message "Setting up [AAD Pod Identity] for environment '$EnvName/$SpaceName'..."
 
-LogStep -Step 1 -Message "Connecting to AKS cluster..."
+LogStep -Message "Connecting to AKS cluster..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-LogStep -Step 3 -Message "Login to acr..."
+LogStep -Message "Login to acr..."
 $acr = az acr show -g $bootstrapValues.acr.resourceGroup -n $bootstrapValues.acr.name | ConvertFrom-Json
 az acr login -n $bootstrapValues.acr.name
 
 
-LogStep -Step 4 -Message "Create K8S secret for docker registry..."
+LogStep -Message "Create K8S secret for docker registry..."
 $existingAcrAuthSecret = kubectl get secret acr-auth -o json | ConvertFrom-Json
 if ($null -ne $existingAcrAuthSecret) {
     LogInfo "ACR secret 'acr-auth' is already created"
@@ -71,7 +71,7 @@ else {
 }
 
 
-LogStep -Step 5 -Message "Build and deploy all services defined in manifest file '$ServiceTemplateFile'..."
+LogStep -Message "Build and deploy all services defined in manifest file '$ServiceTemplateFile'..."
 if ($null -eq $ServiceTemplateFile -or (-not (Test-Path $ServiceTemplateFile))) {
     throw "Unable to find service template file '$ServiceTemplateFile'"
 }

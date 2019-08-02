@@ -47,17 +47,17 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "BuildService"
 
 LogTitle -Message "Building and deploy service '$ServiceName' to '$EnvName/$SpaceName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
-LogStep -Step 1 -Message "Login to azure, aks and acr..."
+LogStep -Message "Login to azure, aks and acr..."
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 az acr login -n $bootstrapValues.acr.name
 
 
-LogStep -Step 2 -Message "Ensure runtime base image is build and pushed to acr"
+LogStep -Message "Ensure runtime base image is build and pushed to acr"
 EnsureBaseDockerImage -templateFolder $templateFolder -scriptFolder $scriptFolder -AcrName $bootstrapValues.acr.name
 
 
-LogStep -Step 3 -Message "Building appsetting file for space '$SpaceName'..."
+LogStep -Message "Building appsetting file for space '$SpaceName'..."
 LogInfo -Message "Reading service manifest from file '$ServiceTemplateFile'..."
 
 $serviceSetting = GetServiceSetting `
@@ -88,7 +88,7 @@ LogInfo -Message "Moving space app setting file to project folder: '$spaceAppSet
 Copy-Item $spaceAppSettingFile -Destination $spaceAppSettingDestinationFile -Force
 
 
-LogStep -Step 3 -Message "Build docker file..."
+LogStep -Message "Build docker file..."
 BuildDockerFile `
     -EnvName $EnvName `
     -SpaceName $SpaceName `
@@ -98,7 +98,7 @@ BuildDockerFile `
     -bootstrapValues $bootstrapValues
 
 
-LogStep -Step 4 -Message "Building docker-compose file"
+LogStep -Message "Building docker-compose file"
 BuildDockerComposeFile `
     -EnvName $EnvName `
     -SpaceName $SpaceName `
@@ -107,7 +107,7 @@ BuildDockerComposeFile `
     -ServiceSetting $serviceSetting
 
 
-LogStep -Step 5 -Message "Build docker image"
+LogStep -Message "Build docker image"
 $dockerComposeFile = Join-Path $svcOutputFolder "docker-compose.$($ServiceName).yaml"
 docker-compose -f $dockerComposeFile stop $ServiceName
 docker-compose -f $dockerComposeFile rm -vf $ServiceName
@@ -119,7 +119,7 @@ if (Test-Path $spaceAppSettingDestinationFile) {
 }
 
 if ($IsLocal) {
-    LogStep -Step 6 -Message "Running docker image on local"
+    LogStep -Message "Running docker image on local"
     # Remove stopped containers
     (& docker ps --quiet --filter 'status=exited' ) | Foreach-Object {
         & docker rm $_ | out-null
@@ -132,7 +132,7 @@ if ($IsLocal) {
     Start-Process powershell "docker-compose -f $dockerComposeFile up $ServiceName"
 }
 else {
-    LogStep -Step 6 -Message "Publishing docker image '$($serviceSetting.acrName).azurecr.io/$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)' to ACR..."
+    LogStep -Message "Publishing docker image '$($serviceSetting.acrName).azurecr.io/$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)' to ACR..."
     az acr login -n $serviceSetting.acrName
     docker push "$($serviceSetting.acrName).azurecr.io/$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)"
     LogInfo "docker image '$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)' successfully pushed to acr '$($serviceSetting.acrName)'"

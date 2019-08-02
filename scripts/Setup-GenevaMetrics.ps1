@@ -35,7 +35,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-GenevaMetrics"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and populate azure settings..."
+LogStep -Message "Login and populate azure settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
@@ -87,7 +87,7 @@ $azureSettingJson = Set-YamlValues -valueTemplate $azureSettingTemplate -setting
 $azureSettingJson | Out-File (Join-Path $adCredsFolder "azure.json") -Encoding utf8
 
 
-LogStep -Step 2 -Message "Download and setup geneva certificate..."
+LogStep -Message "Download and setup geneva certificate..."
 Initialize-BouncyCastleSupport
 $genevaCert = DownloadGenevaCertFromKeyVault -VaultName $bootstrapValues.kv.name -CertName $bootstrapValues.geneva.certName -AsSecret
 $pfxFile = New-TemporaryFile
@@ -144,7 +144,7 @@ finally {
 }
 
 
-LogStep -Step 3 -Message "Install geneva metrics (telegraf-mdm) daemonset..."
+LogStep -Message "Install geneva metrics (telegraf-mdm) daemonset..."
 $metricsYamlTemplateFile = Join-Path $templatesFolder "linux-geneva-agent-metrics.tpl"
 $metricsYamlTemplate = Get-Content $metricsYamlTemplateFile -Raw
 $metricsYaml = Set-YamlValues -valueTemplate $metricsYamlTemplate -settings $bootstrapValues

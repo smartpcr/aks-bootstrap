@@ -29,11 +29,11 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ServiceBus"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve settings..."
+LogStep -Message "Login and retrieve settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 2 -Message "Ensure service bus namespace '$($bootstrapValues.servicebus.name)' is created..."
+LogStep -Message "Ensure service bus namespace '$($bootstrapValues.servicebus.name)' is created..."
 $serviceBusesFound = az servicebus namespace list --resource-group $bootstrapValues.servicebus.resourceGroup --query "[?name=='$($bootstrapValues.servicebus.name)']" | ConvertFrom-Json
 if (!$serviceBusesFound -or ([array]$serviceBusesFound).Length -eq 0) {
     LogInfo "Creating service bus namespace '$($bootstrapValues.servicebus.name)'..."
@@ -44,7 +44,7 @@ if (!$serviceBusesFound -or ([array]$serviceBusesFound).Length -eq 0) {
         --sku $bootstrapValues.servicebus.sku | Out-Null
 }
 
-LogStep -Step 3 -Message "Ensure queues are created..."
+LogStep -Message "Ensure queues are created..."
 if ($bootstrapValues.servicebus.queues) {
     $bootstrapValues.servicebus.queues | ForEach-Object {
         $queue = $_
@@ -65,7 +65,7 @@ if ($bootstrapValues.servicebus.queues) {
     }
 }
 
-LogStep -Step 4 -Message "Ensure topics are created..."
+LogStep -Message "Ensure topics are created..."
 if ($bootstrapValues.servicebus.topics) {
     $bootstrapValues.servicebus.topics | ForEach-Object {
         $topic = $_

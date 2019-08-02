@@ -24,10 +24,10 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Destroy-AksCluster"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 1 -Message "Delete AKS cluster '$($bootstrapValues.aks.clusterName)', this can take up to 10 min..."
+LogStep -Message "Delete AKS cluster '$($bootstrapValues.aks.clusterName)', this can take up to 10 min..."
 az aks delete --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName -y
 
-LogStep -Step 2 -Message "Delete AAD app and service principal associated with AKS..."
+LogStep -Message "Delete AAD app and service principal associated with AKS..."
 $clientAadApp = az ad app list --display-name $bootstrapValues.aks.clientAppName | ConvertFrom-Json
 if ($clientAadApp) {
     LogInfo -Message "Remove client aad app '$($bootstrapValues.aks.clientAppName)'..."
@@ -45,5 +45,5 @@ else {
     LogInfo -Message "AKS service principal '$($bootstrapValues.aks.servicePrincipal)' is already removed."
 }
 
-LogStep -Step 3 -Message "Remove resource group '$($bootstrapValues.aks.resourceGroup)'..."
+LogStep -Message "Remove resource group '$($bootstrapValues.aks.resourceGroup)'..."
 az group delete -g $bootstrapValues.aks.resourceGroup -y

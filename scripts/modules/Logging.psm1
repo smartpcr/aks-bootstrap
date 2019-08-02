@@ -22,6 +22,7 @@ function InitializeLogger() {
 
     if ($ShouldCreateLogger) {
         $Global:ScriptName = if ($MyInvocation.MyCommand.Name) { $MyInvocation.MyCommand.Name } else { $ScriptName }
+        LogTitle -Message $Global:ScriptName
 
         [System.Collections.ArrayList]($Global:Steps) = New-Object System.Collections.ArrayList
         ($Global:Steps).Add(@{

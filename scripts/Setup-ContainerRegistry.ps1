@@ -23,7 +23,7 @@ Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ContainerRegistry"
 LogTitle -Message "Setting Up Container Registry for Environment '$EnvName'"
 
-LogStep -Step 1 -Message "Retrieving environment settings for '$EnvName'..."
+LogStep -Message "Retrieving environment settings for '$EnvName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 $rgName = $bootstrapValues.acr.resourceGroup
@@ -34,7 +34,7 @@ $vaultName = $bootstrapValues.kv.name
 $acrPwdSecretName = $bootstrapValues.acr.passwordSecretName
 
 # use ACR
-LogStep -Step 2 -Message "Ensure ACR with name '$acrName' is setup..."
+LogStep -Message "Ensure ACR with name '$acrName' is setup..."
 $acr = az acr show -g $rgName -n $acrName | ConvertFrom-Json
 if (!$acr -or $acr.name -ne $acrName) {
     LogInfo -Message "Creating container registry $acrName..."
@@ -47,7 +47,7 @@ else {
 
 
 # login to azure
-LogStep -Step 3 -Message "Granting service principal access to ACR..."
+LogStep -Message "Granting service principal access to ACR..."
 $acrId = $acr.id
 $spnName = $bootstrapValues.global.servicePrincipal
 $spn = az ad sp list --display-name $spnName | ConvertFrom-Json
@@ -62,12 +62,12 @@ else {
 # LoginAsServicePrincipal -EnvName $EnvName -ScriptFolder $envFolder
 
 
-LogStep -Step 4 -Message "Login ACR '$acrName' and retrieve password..."
+LogStep -Message "Login ACR '$acrName' and retrieve password..."
 az acr login -n $acrName | Out-Null
 az acr update -n $acrName --admin-enabled true | Out-Null
 
 
-LogStep -Step 5 -Message "Save ACR password with name '$acrPwdSecretName' to KV '$vaultName'"
+LogStep -Message "Save ACR password with name '$acrPwdSecretName' to KV '$vaultName'"
 LogInfo -Message "Make sure docker is running"
 # docker kill $(docker ps -q)
 $acrUsername = $acrName

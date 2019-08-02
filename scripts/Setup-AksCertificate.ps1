@@ -34,13 +34,13 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AksCertificate"
 LogTitle -Message "Install certificates for environment '$EnvName'..."
 
 
-LogStep -Step 1 -Message "Login and retrieve aks spn pwd..."
+LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
-LogStep -Step 2 -Message "Download certificates from keyvaults..."
+LogStep -Message "Download certificates from keyvaults..."
 Initialize-BouncyCastleSupport
 $bootstrapValues.aks.certs | ForEach-Object {
     $certSetting = $_
@@ -133,7 +133,7 @@ type: Opaque
 }
 
 
-LogStep -Step 3 -Message "Ensure ssl wildcard cert is create and deployed to k8s"
+LogStep -Message "Ensure ssl wildcard cert is create and deployed to k8s"
 $sslCertSecret = $bootstrapValues.dns.sslCert
 $wildCardDomain = "*.$($bootstrapValues.dns.domain)"
 

@@ -24,7 +24,7 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-KeyVault"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 1 -Message "Ensure resource groups are created..."
+LogStep -Message "Ensure resource groups are created..."
 $groupNames = New-Object System.Collections.ArrayList
 if (-not ($groupNames -contains $bootstrapValues.global.resourceGroup)) {
     $groupNames.Add($bootstrapValues.global.resourceGroup) | Out-Null
@@ -66,7 +66,7 @@ $groupNames | ForEach-Object {
     az group create --name $rgName --location $bootstrapValues.global.location | Out-Null
 }
 
-LogStep -Step 2 -Message "Ensure key vaults are created..."
+LogStep -Message "Ensure key vaults are created..."
 $kvs = az keyvault list --resource-group $bootstrapValues.kv.resourceGroup --query "[?name=='$($bootstrapValues.kv.name)']" | ConvertFrom-Json
 if ($kvs.Count -eq 0) {
 

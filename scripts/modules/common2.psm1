@@ -29,7 +29,7 @@ function SetupGlobalEnvironmentVariables() {
     New-Item -Path $logFolder -ItemType Directory -Force | Out-Null
     $timeString = (Get-Date).ToString("yyyy-MM-dd-HHmmss")
     $logFile = Join-Path $logFolder "$($timeString).log"
-    $env:LogFile = $logFile
+    $Global:LogFile = $logFile
 }
 
 function LogVerbose() {
@@ -37,8 +37,8 @@ function LogVerbose() {
         [string] $Message,
         [int] $IndentLevel = 0)
 
-    if (-not (Test-Path $env:LogFile)) {
-        New-Item -Path $env:LogFile -ItemType File -Force | Out-Null
+    if (-not (Test-Path $Global:LogFile)) {
+        New-Item -Path $Global:LogFile -ItemType File -Force | Out-Null
     }
 
     $timeString = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
@@ -47,7 +47,7 @@ function LogVerbose() {
         $formatedMessage = "`t" + $formatedMessage
     }
     $formatedMessage += "$timeString $Message"
-    Add-Content -Path $env:LogFile -Value $formatedMessage
+    Add-Content -Path $Global:LogFile -Value $formatedMessage
 }
 
 function LogInfo() {
@@ -74,17 +74,6 @@ function LogTitle() {
     Write-Host "`n"
     Write-Host "`t`t***** $Message *****" -ForegroundColor Green
     Write-Host "`n"
-}
-
-function LogStep() {
-    param(
-        [int] $Step,
-        [string] $Message
-    )
-
-    $formatedMessage = "$Step) $Message"
-    LogVerbose -Message $formatedMessage
-    Write-Host "$formatedMessage" -ForegroundColor Green
 }
 
 function Get-OrCreatePasswordInVault2 {

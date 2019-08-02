@@ -32,11 +32,11 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "ValidateEnvSettings"
 
 LogTitle -Message "Validating environment settings for '$EnvName/$SpaceName'..."
 
-LogStep -Step 1 -Message "Login to azure ..."
+LogStep -Message "Login to azure ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 
-LogStep -Step 2 -Message "Validating resource group..."
+LogStep -Message "Validating resource group..."
 $groupNames = New-Object System.Collections.ArrayList
 if (-not ($groupNames -contains $bootstrapValues.global.resourceGroup)) {
     $groupNames.Add($bootstrapValues.global.resourceGroup) | Out-Null
@@ -78,7 +78,7 @@ $groupNames | ForEach-Object {
     az group create --name $rgName --location $bootstrapValues.global.location | Out-Null
 }
 
-LogStep -Step 3 -Message "Verifying key vault name '$($bootstrapValues.kv.name)'..."
+LogStep -Message "Verifying key vault name '$($bootstrapValues.kv.name)'..."
 $kvs = az keyvault list --resource-group $bootstrapValues.kv.resourceGroup --query "[?name=='$($bootstrapValues.kv.name)']" | ConvertFrom-Json
 if ($kvs.Count -eq 0) {
 
@@ -102,7 +102,7 @@ if ($kvs.Count -eq 0) {
     }
 }
 
-LogStep -Step 4 -Message "Verifying SPNs..."
+LogStep -Message "Verifying SPNs..."
 $spnNames = New-Object System.Collections.ArrayList
 if (-not ($spnNames -contains $bootstrapValues.global.servicePrincipal)) {
     $spnNames.Add($bootstrapValues.global.servicePrincipal) | Out-Null
@@ -138,7 +138,7 @@ $spnNames | ForEach-Object {
     }
 }
 
-LogStep -Step 5 -Message "Verifying app insights account..."
+LogStep -Message "Verifying app insights account..."
 $existingAppInsights = az resource list --resource-group $bootstrapValues.appInsights.resourceGroup --name $bootstrapValues.appInsights.name | ConvertFrom-Json
 if (!$existingAppInsights -or ($existingAppInsights -is [array] -and $existingAppInsights.Count -eq 0)) {
     try {
@@ -167,7 +167,7 @@ if (!$existingAppInsights -or ($existingAppInsights -is [array] -and $existingAp
     }
 }
 
-LogStep -Step 5 -Message "Verifying cosmos db account..."
+LogStep -Message "Verifying cosmos db account..."
 $accountSettings = New-Object System.Collections.ArrayList
 if ($bootstrapValues.global.components.docDb -and $bootstrapValues.cosmosdb.docDb.account) {
     if (([string]$bootstrapValues.cosmosdb.docDb.account).Length -gt 30) {
