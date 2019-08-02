@@ -297,6 +297,16 @@ az aks enable-addons `
     --addons http_application_routing | Out-Null
 
 
+LogStep -Message "Setup k8s ingress..."
+if ($bootstrapValues.aks.ingress -contains "nginx") {
+    LogInfo "Setting up k8s ingress ..."
+    & "$scriptFolder\Setup-DNS.ps1" -EnvName $EnvName -SpaceName $SpaceName
+}
+else {
+    LogInfo "nginx is not enabled"
+}
+
+
 LogStep -Message "Ensure aks service principal has access to ACR..."
 $acrName = $bootstrapValues.acr.name
 $acrResourceGroup = $bootstrapValues.acr.resourceGroup
@@ -433,14 +443,6 @@ else {
 }
 
 
-LogStep -Message "Setup k8s ingress..."
-if ($bootstrapValues.aks.ingress -contains "nginx") {
-    LogInfo "Setting up k8s ingress ..."
-    & "$scriptFolder\Setup-DNS.ps1" -EnvName $EnvName -SpaceName $SpaceName
-}
-else {
-    LogInfo "nginx is not enabled"
-}
 
 
 # if ($bootstrapValues.aks.useCertManager) {

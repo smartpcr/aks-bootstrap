@@ -140,3 +140,8 @@ $externalDnsTemplate = Set-YamlValues -valueTemplate $externalDnsTemplate -setti
 $externalDnsYamlFile = Join-Path $yamlsFolder "external-dns.yaml"
 $externalDnsTemplate | Out-File $externalDnsYamlFile -Encoding utf8 -Force | Out-Null
 kubectl apply -f $externalDnsYamlFile
+
+
+LogStep -Message "Make sure domain provider (godaddy, namecheap, etc) DNS settings are pointing to newly created azure dns zone"
+LogInfo -Message "Note: DNS change takes 10min - 1 hr to propagate"
+Read-Host "Hit enter when done"
