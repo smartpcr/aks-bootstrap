@@ -22,7 +22,8 @@ if (-not (Test-Path $scriptFolder)) {
 $moduleFolder = Join-Path $scriptFolder "modules"
 
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
-Import-Module (Join-Path $moduleFolder "common2.psm1") -Force
+Import-Module (Join-Path $moduleFolder "Common2.psm1") -Force
+Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
