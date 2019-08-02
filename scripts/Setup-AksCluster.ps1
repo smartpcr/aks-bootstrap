@@ -152,12 +152,12 @@ else {
 }
 
 
-LogStep -Message "Manually add aks cluster spn client secret..."
-$aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
-$aksClusterSpnPwd = Read-Host "Enter password for service principal $($aksClusterSpnClientId): '$($bootstrapValues.aks.clusterName)'"
-$aksClusterSpnPwd = $aksClusterSpnPwd.Replace("-", "`-").Replace("$","`$")
-$aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
-az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd | Out-Null
+# LogStep -Message "Manually add aks cluster spn client secret..."
+# $aksClusterSpnClientId = $(az aks show --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName --query servicePrincipalProfile.clientId -o tsv)
+# $aksClusterSpnPwd = Read-Host "Enter password for service principal $($aksClusterSpnClientId): '$($bootstrapValues.aks.clusterName)'"
+# $aksClusterSpnPwd = $aksClusterSpnPwd.Replace("-", "`-").Replace("$","`$")
+# $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+# az keyvault secret set --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret --value $aksClusterSpnPwd | Out-Null
 
 
 <#
