@@ -1,4 +1,33 @@
 
+function AddAdditionalAksProperties() {
+    param(
+        [object]$bootstrapValues
+    )
+
+    $bootstrapValues.aks["nodeResourceGroup"] = GetAksResourceGroupName -bootstrapValues $bootstrapValues
+    $bootstrapValues.aks["networkSecurityGroup"] = (GetNetworkSecurityGroup -bootstrapValues $bootstrapValues).name
+    $bootstrapValues.aks["virtualNetwork"] = (GetVirtualNetwork -bootstrapValues $bootstrapValues).name
+    $bootstrapValues.aks["routeTable"] = (GetRouteTable -bootstrapValues $bootstrapValues).name
+    $bootstrapValues.aks["availabilitySet"] = (GetAvailabilitySet -bootstrapValues $bootstrapValues).name
+
+    [array]$aksClusterSpns = az ad sp list --display-name $bootstrapValues.aks.clusterName | ConvertFrom-Json
+    if ($null -eq $aksClusterSpns -or $aksClusterSpns.Count -ne 1) {
+        throw "Unable to find aks cluster spn '$($bootstrapValues.aks.clusterName)'"
+    }
+    $aksClusterSpnPwdSecret = "$($bootstrapValues.aks.clusterName)-password"
+    $aksClusterSpnPwd = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $aksClusterSpnPwdSecret | ConvertFrom-Json
+    $aksClusterSpn = @{
+        appId        = $aksClusterSpns[0].appId
+        clientSecret = $aksClusterSpnPwd.value
+    }
+    $bootstrapValues.aks["clusterSpn"] = $aksClusterSpn
+
+    $aksPublicSshKey = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $bootstrapValues.aks.ssh_pubblic_key | ConvertFrom-Json
+    # az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.aks.ssh_pubblic_key --value $aksPublicSshKey.value
+    $bootstrapValues.aks["nodePublicSshKey"] = ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($aksPublicSshKey.value))).Trim()
+}
+
+
 function GetAksResourceGroupName() {
     param(
         [object] $bootstrapValues

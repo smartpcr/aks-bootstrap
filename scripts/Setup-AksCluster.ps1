@@ -50,7 +50,8 @@ az group create --name $bootstrapValues.aks.resourceGroup --location $bootstrapV
 LogStep -Message "Ensure SSH key is present for linux vm access..."
 EnsureSshCert `
     -VaultName $bootstrapValues.kv.name `
-    -CertName $bootstrapValues.aks.ssh_private_key `
+    -SshPrivateKey $bootstrapValues.aks.ssh_private_key `
+    -SshPublicKey $bootstrapValues.aks.ssh_pubblic_key `
     -EnvName $EnvName `
     -EnvRootFolder $envRootFolder
 $aksCertPublicKeyFile = Join-Path $envCredentialFolder "$($bootstrapValues.aks.ssh_private_key).pub"

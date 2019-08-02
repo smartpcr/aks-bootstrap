@@ -40,30 +40,31 @@ function DownloadCertFromKeyVault {
 function EnsureSshCert {
     param(
         [string] $VaultName,
-        [string] $CertName,
+        [string] $SshPrivateKey,
+        [string] $SshPublicKey,
         [string] $EnvName,
         [string] $EnvRootFolder
     )
 
     $credentialFolder = Join-Path (Join-Path $EnvRootFolder "credential") $EnvName
     New-Item $credentialFolder -ItemType Directory -Force | Out-Null
-    $certFile = Join-Path $credentialFolder $CertName
+    $certFile = Join-Path $credentialFolder $SshPrivateKey
     $pubCertFile = "$certFile.pub"
-    $pubCertName = "$($CertName)-pub"
+    $pubCertName = $SshPublicKey
 
     if (-not (Test-Path $pubCertFile)) {
         LogInfo -Message "File '$pubCertFile' is not found oon disk"
-        $certSecret = az keyvault secret show --vault-name $VaultName --name $CertName | ConvertFrom-Json
+        $certSecret = az keyvault secret show --vault-name $VaultName --name $SshPrivateKey | ConvertFrom-Json
         if (!$certSecret) {
-            $pwdName = "$($CertName)-pwd"
+            $pwdName = "$($SshPrivateKey)-pwd"
             LogInfo -Message "SSH key password is stored in kv '$VaultName' with name '$pwdName'"
             $pwdSecret = Get-OrCreatePasswordInVault2 -VaultName $VaultName -SecretName $pwdName
             LogInfo -Message "Generating ssh key for linux vm in AKS cluster..."
             ssh-keygen -f $certFile -P $pwdSecret.value
 
-            LogInfo -Message "Put ssh private key '$CertName' to keyvault '$VaultName'"
+            LogInfo -Message "Put ssh private key '$SshPrivateKey' to keyvault '$VaultName'"
             $certPrivateString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($certFile))
-            az keyvault secret set --vault-name $VaultName --name $CertName --value $certPrivateString | Out-Null
+            az keyvault secret set --vault-name $VaultName --name $SshPrivateKey --value $certPrivateString | Out-Null
             LogInfo -Message "Put ssh public key '$pubCertName' to keyvault '$VaultName'"
             $certPublicString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($pubCertFile))
             az keyvault secret set --vault-name $VaultName --name $pubCertName --value $certPublicString | Out-Null
@@ -72,7 +73,7 @@ function EnsureSshCert {
             LogInfo -Message "Found ssh public key '$pubCertName' within keyvault '$VaultName'. Download it to file '$pubCertFile'"
             $pubCertSecret = az keyvault secret show --vault-name $VaultName --name $pubCertName | ConvertFrom-Json
             [System.IO.File]::WriteAllBytes($pubCertFile, [System.Convert]::FromBase64String($pubCertSecret.value))
-            $privateCertSecret = az keyvault secret show --vault-name $VaultName --name $CertName | ConvertFrom-Json
+            $privateCertSecret = az keyvault secret show --vault-name $VaultName --name $SshPrivateKey | ConvertFrom-Json
             [System.IO.File]::WriteAllBytes($certFile, [System.Convert]::FromBase64String($privateCertSecret.value))
         }
     }

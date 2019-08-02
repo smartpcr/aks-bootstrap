@@ -5,3 +5,4 @@ yamls/
 certs/
 secrets/
 charts/
+terraform/
