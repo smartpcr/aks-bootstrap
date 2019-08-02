@@ -171,3 +171,11 @@ fi
 
 echo "remove keys"
 rm packages-microsoft-prod.deb
+
+
+echo "install pulumi"
+if [ -f "/usr/local/bin/pulumi" ]; then
+    echo "pulumi already installed"
+else
+    brew install pulumi
+fi 

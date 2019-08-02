@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodoli"
+    [string] $SpaceName = "xiaodong"
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,7 +44,12 @@ if (Test-Path $sshKeyFile) {
     Remove-Item $sshKeyFile -Force
 }
 ssh-keygen -b 4096 -t rsa -f $sshKeyFile
-az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.flux.tokenSecret --file $sshKeyFile | Out-Null
+az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.flux.deployPrivateKey --file $sshKeyFile | Out-Null
+az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.flux.deployPublicKey --file "$($sshKeyFile).pub" | Out-Null
+$pubKeyContent = Get-Content "$($sshKeyFile).pub"
+LogInfo -Message "publick key: '$($bootstrapValues.flux.deployPublicKey)'`n$($pubKeyContent)"
+LogInfo -Message "navigate to https://github.com/smartpcr/flux/settings/keys and add public deploy key"
+Read-Host "Hit enter after add deploy key to github manually"
 
 
 helm repo add fluxcd https://fluxcd.github.io/flux
