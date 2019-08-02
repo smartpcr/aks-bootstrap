@@ -15,13 +15,16 @@ function InitializeLogger() {
         if ($null -eq $Global:ScriptName) {
             $ShouldCreateLogger = $true
         }
+        if ($null -eq $Global:LogFile) {
+            $ShouldCreateLogger = $true
+        }
     }
     catch {
         $ShouldCreateLogger = $true
     }
 
     if ($ShouldCreateLogger) {
-        $Global:ScriptName = if ($MyInvocation.MyCommand.Name) { $MyInvocation.MyCommand.Name } else { $ScriptName }
+        $Global:ScriptName = if ($ScriptName) { $ScriptName } else { $MyInvocation.MyCommand.Name } 
         LogTitle -Message $Global:ScriptName
 
         [System.Collections.ArrayList]($Global:Steps) = New-Object System.Collections.ArrayList

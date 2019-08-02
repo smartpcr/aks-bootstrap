@@ -31,10 +31,8 @@ Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-CertManager"
-LogTitle -Message "Setting up cert-manager, lets-encrypt to automate wildcard ssl cert creation and trust in environment '$EnvName/$SpaceName'..."
-
-
 LogStep -Message "Login azure and connect to aks ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null

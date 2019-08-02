@@ -30,10 +30,8 @@ Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AksUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-WeaveworksFlux"
-LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
-
-
 LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null

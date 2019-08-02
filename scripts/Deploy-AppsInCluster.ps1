@@ -40,8 +40,6 @@ Import-Module (Join-Path $moduleFolder "ServiceUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Deploy-AppsInCluster"
-LogTitle -Message "Setting up [AAD Pod Identity] for environment '$EnvName/$SpaceName'..."
-
 LogStep -Message "Connecting to AKS cluster..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName

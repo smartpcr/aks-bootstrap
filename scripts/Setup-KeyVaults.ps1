@@ -1,6 +1,6 @@
 param(
     [string] $EnvName = "dev",
-    [string] $SpaceName = "rrdu",
+    [string] $SpaceName = "rrdp",
     [bool] $IsLocal = $true
 )
 

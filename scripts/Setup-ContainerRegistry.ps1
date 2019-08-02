@@ -20,9 +20,8 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
-InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ContainerRegistry"
-LogTitle -Message "Setting Up Container Registry for Environment '$EnvName'"
 
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ContainerRegistry"
 LogStep -Message "Retrieving environment settings for '$EnvName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null

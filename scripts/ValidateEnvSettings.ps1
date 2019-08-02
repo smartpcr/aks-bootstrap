@@ -28,10 +28,8 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CosmosDb.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "ValidateEnvSettings"
-
-LogTitle -Message "Validating environment settings for '$EnvName/$SpaceName'..."
-
 LogStep -Message "Login to azure ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null

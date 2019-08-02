@@ -31,10 +31,8 @@ Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AksUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-GenevaMetrics"
-LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
-
-
 LogStep -Message "Login and populate azure settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName

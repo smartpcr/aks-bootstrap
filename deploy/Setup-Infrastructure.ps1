@@ -40,60 +40,70 @@ else {
         & $scriptFolder\Setup-KeyVaults.ps1 -EnvName $EnvName -SpaceName $SpaceName
     }
 
-    LogStep -Message "Creating service principals..."
-    & $scriptFolder\Setup-ServicePrincipal.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    UsingScope("Ensure service principals") {
+        & $scriptFolder\Setup-ServicePrincipal.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    }
 
     if ($SyncKeyVault) {
-        LogStep -Message "Synchronize key vault certs and secrets..."
-        & $scriptFolder\Sync-KeyVault.ps1 `
-            -TgtSubscriptionName $bootstrapValues.global.subscriptionName `
-            -TgtVaultName $bootstrapValues.kv.name
+        UsingScope("Synchronize key vault") {
+            & $scriptFolder\Sync-KeyVault.ps1 `
+                -TgtSubscriptionName $bootstrapValues.global.subscriptionName `
+                -TgtVaultName $bootstrapValues.kv.name
+        }
     }
 
     if ($bootstrapValues.global.components.terraform) {
-        LogStep -Message "Setup terraform..."
-        & $scriptFolder\Setup-Terraform.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        UsingScope("Setup terraform") {
+            & $scriptFolder\Setup-Terraform.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        }
     }
 
     if ($bootstrapValues.global.components.acr) {
-        LogStep -Message "Bootstrap ACR..."
-        & $scriptFolder\Setup-ContainerRegistry.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        UsingScope("Setup ACR") {
+            & $scriptFolder\Setup-ContainerRegistry.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        }
 
         if ($SyncAcr) {
-            LogStep -Message "Sync ACR..."
-            & $scriptFolder\Sync-AcrRepos.ps1 -EnvName $EnvName -SpaceName $SpaceName
+            UsingScope("Sync ACR") {
+                & $scriptFolder\Sync-AcrRepos.ps1 -EnvName $EnvName -SpaceName $SpaceName
+            }
         }
     }
 
     if ($bootstrapValues.global.components.aks) {
-        LogStep -Message "Setup AKS..."
-        & $scriptFolder\Setup-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        UsingScope("Setup AKS") {
+            & $scriptFolder\Setup-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        }
     }
 }
 
 
 if ($bootstrapValues.global.components.appInsights) {
-    LogStep -Message "Setup App Insights..."
-    & $scriptFolder\Setup-ApplicationInsights.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    UsingScope("Setup App Insights") {
+        & $scriptFolder\Setup-ApplicationInsights.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    }
 }
 
 
 if ($null -ne $bootstrapValues.global.components["cosmosdb"]) {
     $cosmosDbSetting = $bootstrapValues.global.components.cosmosdb
     if ($cosmosDbSetting.docDb -or $cosmosDbSetting.mongoDb -or $cosmosDbSetting.graphDb) {
-        LogStep -Message "Setup Mongo DB..."
-        & $scriptFolder\Setup-CosmosDb.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        UsingScope("Setup Cosmos DB") {
+            & $scriptFolder\Setup-CosmosDb.ps1 -EnvName $EnvName -SpaceName $SpaceName
+        }
     }
 }
 
 
 if ($bootstrapValues.global.components.servicebus) {
-    LogStep -Message "Setup service bus..."
-    & $scriptFolder\Setup-ServiceBus.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    UsingScope("Setup service bus") {
+        & $scriptFolder\Setup-ServiceBus.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    }
 }
 
 
 if ($bootstrapValues.global.components.redis) {
-    LogStep -Message "Setup redis cluster '$($bootstrapValues.redis.name)' in resource group '$($bootstrapValues.redis.resourceGroup)'..."
-    & $scriptFolder\Setup-Redis.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    UsingScope("Setup redis cluster") {
+        & $scriptFolder\Setup-Redis.ps1 -EnvName $EnvName -SpaceName $SpaceName
+    }
 }

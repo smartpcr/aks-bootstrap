@@ -32,8 +32,8 @@ Import-Module (Join-Path $moduleFolder "Common2.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ServicePrincipal"
-LogTitle "Setting Up Service Principal for Environment $EnvName"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 
 # login and set subscription
@@ -124,4 +124,3 @@ if ($bootstrapValues.global.components.aks -eq $true) {
 
 # connect as service principal
 LoginAsServicePrincipal -EnvName $EnvName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
-LogTitle "Remember to manually grant aad app request before creating aks cluster!"

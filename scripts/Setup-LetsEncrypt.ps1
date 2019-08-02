@@ -33,9 +33,6 @@ Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-LetsEncrypt"
-LogTitle -Message "Setting up Lets-Encrypt for environment '$EnvName/$SpaceName'..."
-
-
 LogStep -Message "Login azure and connect to aks ..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName

@@ -19,10 +19,8 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
+
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-ApplicationInsights"
-LogTitle -Message "Setting up App Insights for environment '$EnvName'..."
-
-
 LogStep -Message "Login and retriing app insights settings..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envRootFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
