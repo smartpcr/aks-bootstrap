@@ -78,7 +78,7 @@ if ($null -eq $ServiceTemplateFile -or (-not (Test-Path $ServiceTemplateFile))) 
 LogInfo -Message "Cleaning existing docker images on local disk..."
 ClearLocalDockerImages
 
-$serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml2 -Ordered
+$serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
 LogInfo -Message "Collecting ssl certs and ingress rules for all the services..."
 $serviceTemplates.services | ForEach-Object {
     $serviceName = $_.name

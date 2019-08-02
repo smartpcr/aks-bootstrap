@@ -49,7 +49,7 @@ PowerShellVersion = '3.0'
 ScriptsToProcess = @("Load-Assemblies.ps1")
 
 # Functions to export from this module
-FunctionsToExport = "ConvertTo-Yaml2","ConvertFrom-Yaml2"
+FunctionsToExport = "ConvertTo-Yaml","ConvertFrom-Yaml"
 
 AliasesToExport = "cfy","cty"
 }

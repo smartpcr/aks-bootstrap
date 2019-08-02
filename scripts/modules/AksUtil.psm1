@@ -196,11 +196,11 @@ function AddAksRoleAssignment() {
     $accessControlYamlFile = Join-Path $yamlsFolder "Aks-Access-$RoleName.yaml"
     $accessControlTemplateFile = Join-Path $templatesFolder "k8s-$($RoleName)s.yaml"
     $accessControlTemplate = Get-Content $accessControlTemplateFile -Raw
-    $accessControl = $accessControlTemplate | ConvertFrom-Yaml2 -Ordered
+    $accessControl = $accessControlTemplate | ConvertFrom-Yaml -Ordered
     if ($RoleName -eq "owner") {
         $accessControl.subjects = $subjects
     }
-    $accessControlTemplate = $accessControl | ConvertTo-Yaml2
+    $accessControlTemplate = $accessControl | ConvertTo-Yaml
     $accessControlTemplate | Out-File $accessControlYamlFile -Encoding utf8 -Force | Out-Null
     kubectl apply -f $accessControlYamlFile
 
@@ -242,9 +242,9 @@ subjects:
 
     if ($null -ne $roleBindingYaml) {
         $roleBindingYamlFile = Join-Path $yamlsFolder "RoleBinding-$RoleName.yaml"
-        $roleBinding = $roleBindingYaml | ConvertFrom-Yaml2 -Ordered
+        $roleBinding = $roleBindingYaml | ConvertFrom-Yaml -Ordered
         $roleBinding.subjects = $subjects
-        $roleBindingYaml = $roleBinding | ConvertTo-Yaml2
+        $roleBindingYaml = $roleBinding | ConvertTo-Yaml
         $roleBindingYaml | Out-File $roleBindingYamlFile -Encoding utf8 -Force | Out-Null
         kubectl apply -f $roleBindingYamlFile
     }

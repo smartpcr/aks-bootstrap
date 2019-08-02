@@ -120,7 +120,7 @@ if ($null -eq $aksClusters -or $aksClusters.Count -eq 0) {
         $terraformTemplateFile = Join-Path $aksTfFolder "terraform.tfvars.tpl"
         $terraformVarFile = Join-Path $aksTfFolder "terraform.tfvars"
         Copy-Item $terraformTemplateFile -Destination $terraformVarFile -Force
-        Get-Content $terraformVarFile -Raw | ConvertFrom-Yaml2 -Ordered
+        Get-Content $terraformVarFile -Raw | ConvertFrom-Yaml -Ordered
         #TODO: implement teraform install
     }
     $aks = az aks create `

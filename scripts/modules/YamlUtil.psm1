@@ -9,7 +9,8 @@ if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
 
-Import-Module "$scriptFolder\Modules\powershell-yaml\powershell-yaml.psm1" -Force
+# Import-Module "$scriptFolder\Modules\powershell-yaml\powershell-yaml.psm1" -Force
+Import-Module powershell-yaml
 
 function Get-EnvironmentSettings {
     param(
@@ -19,12 +20,12 @@ function Get-EnvironmentSettings {
         [Hashtable] $AdditionalSettings
     )
 
-    $valuesOverride = Get-Content (Join-Path $EnvRootFolder "values.yaml") -Raw | ConvertFrom-Yaml2
+    $valuesOverride = Get-Content (Join-Path $EnvRootFolder "values.yaml") -Raw | ConvertFrom-Yaml
     if ($EnvName) {
         $envFolder = Join-Path $EnvRootFolder $EnvName
         $envValueYamlFile = Join-Path $envFolder "values.yaml"
         if (Test-Path $envValueYamlFile) {
-            $envValues = Get-Content $envValueYamlFile -Raw | ConvertFrom-Yaml2
+            $envValues = Get-Content $envValueYamlFile -Raw | ConvertFrom-Yaml
             Copy-YamlObject -fromObj $envValues -toObj $valuesOverride
         }
 
@@ -32,7 +33,7 @@ function Get-EnvironmentSettings {
             $spaceFolder = Join-Path $envFolder $SpaceName
             $spaceValueYamlFile = Join-Path $spaceFolder "values.yaml"
             if (Test-Path $spaceValueYamlFile) {
-                $spaceValues = Get-Content $spaceValueYamlFile -Raw | ConvertFrom-Yaml2
+                $spaceValues = Get-Content $spaceValueYamlFile -Raw | ConvertFrom-Yaml
                 Copy-YamlObject -fromObj $spaceValues -toObj $valuesOverride
             }
         }
@@ -44,7 +45,7 @@ function Get-EnvironmentSettings {
 
     $bootstrapTemplate = Get-Content "$EnvRootFolder\env.yaml" -Raw
     $bootstrapTemplate = Set-YamlValues -valueTemplate $bootstrapTemplate -settings $valuesOverride
-    $bootstrapValues = $bootstrapTemplate | ConvertFrom-Yaml2
+    $bootstrapValues = $bootstrapTemplate | ConvertFrom-Yaml
 
     $propertiesOverride = GetProperties -subject $valuesOverride
     $targetProperties = GetProperties -subject $bootstrapValues

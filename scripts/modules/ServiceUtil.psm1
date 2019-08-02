@@ -180,7 +180,7 @@ function BuildDockerComposeFile() {
     $dockerComposeContent = $dockerComposeContent.Replace("\", "/")
     $dockerComposeFile = Join-Path $svcOutputFolder "docker-compose.$($ServiceName).yaml"
     $dockerComposeContent | Out-File $dockerComposeFile -Encoding utf8 -Force | Out-Null
-    $composeFileYaml = Get-Content $dockerComposeFile -Raw | ConvertFrom-Yaml2 -Ordered
+    $composeFileYaml = Get-Content $dockerComposeFile -Raw | ConvertFrom-Yaml -Ordered
 
     LogInfo -Message "Handling ports..."
     if ($null -eq $ServiceSetting.service["ports"]) {
@@ -214,7 +214,7 @@ function BuildDockerComposeFile() {
         Copy-Item $envFile -Destination $envTargetFile -Force | Out-Null
     }
 
-    $dockerComposeYamlContent = $composeFileYaml | ConvertTo-Yaml2
+    $dockerComposeYamlContent = $composeFileYaml | ConvertTo-Yaml
     $dockerComposeYamlContent | Out-File $dockerComposeFile -Encoding utf8 -Force | Out-Null
 
     LogInfo -Message "dockercompose file is built: '$dockerComposeFile'"
@@ -249,22 +249,22 @@ function GetServiceSetting() {
     $servicesYamlFile = Join-Path $yamlsFolder "services.yaml"
     Copy-Item $ServiceTemplateFile -Destination $servicesYamlFile -Force | Out-Null
     $serviceYamlContent = Get-Content $servicesYamlFile -Raw
-    $serviceYamlSettings = $serviceYamlContent | ConvertFrom-Yaml2 -Ordered
+    $serviceYamlSettings = $serviceYamlContent | ConvertFrom-Yaml -Ordered
     $fileExtension = [System.IO.Path]::GetExtension($ServiceTemplateFile)
     $serviceSpaceSettingFile = $ServiceTemplateFile.Substring(0, $ServiceTemplateFile.Length - $fileExtension.Length) + ".$($SpaceName)$($fileExtension)"
     if (Test-Path $serviceSpaceSettingFile) {
         $spaceSettingsContent = Get-Content $serviceSpaceSettingFile -Raw
         $spaceSettingsContent = Set-YamlValues -ValueTemplate $spaceSettingsContent -Settings $bootstrapValues
-        $spaceSettings = $spaceSettingsContent | ConvertFrom-Yaml2
+        $spaceSettings = $spaceSettingsContent | ConvertFrom-Yaml
         Copy-YamlObject -FromObj $spaceSettings -ToObj $serviceYamlSettings
-        $serviceYamlContent = $serviceYamlSettings | ConvertTo-Yaml2
+        $serviceYamlContent = $serviceYamlSettings | ConvertTo-Yaml
     }
     else {
         $serviceEnvSettingFile = $ServiceTemplateFile.Substring(0, $ServiceTemplateFile.Length - $fileExtension.Length) + ".$($EnvName)$($fileExtension)"
         if (Test-Path $serviceEnvSettingFile) {
-            $envSettings = Get-Content $serviceEnvSettingFile -Raw | ConvertFrom-Yaml2
+            $envSettings = Get-Content $serviceEnvSettingFile -Raw | ConvertFrom-Yaml
             Copy-YamlObject -fromObj $envSettings -toObj $serviceYamlSettings
-            $serviceYamlContent = $serviceYamlSettings | ConvertTo-Yaml2
+            $serviceYamlContent = $serviceYamlSettings | ConvertTo-Yaml
         }
     }
 
@@ -281,7 +281,7 @@ function GetServiceSetting() {
     $serviceYamlContent = Set-YamlValues -valueTemplate $serviceYamlContent -settings $bootstrapValues
     $serviceYamlContent | Out-File $servicesYamlFile -Encoding utf8 -Force | Out-Null
 
-    $services = Get-Content $servicesYamlFile -Raw | ConvertFrom-Yaml2 -Ordered
+    $services = Get-Content $servicesYamlFile -Raw | ConvertFrom-Yaml -Ordered
 
     $service = $null
     $services.services | ForEach-Object {
@@ -416,10 +416,10 @@ function CreateAppSettings() {
         [string]$ScriptFolder
     )
 
-    $serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml2 -Ordered
+    $serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
     $serviceSpaceTemplateFile = Join-Path (Split-Path $ServiceTemplateFile -Parent) "services.$SpaceName.yaml"
     if (Test-Path $serviceSpaceTemplateFile) {
-        $serviceSpaceTemplates = Get-Content $serviceSpaceTemplateFile -Raw | ConvertFrom-Yaml2
+        $serviceSpaceTemplates = Get-Content $serviceSpaceTemplateFile -Raw | ConvertFrom-Yaml
         Copy-YamlObject -FromObj $serviceSpaceTemplates -ToObj $serviceTemplates
     }
     $Services = $serviceTemplates.services
@@ -458,19 +458,19 @@ function CreateAppSettings() {
         $appSettingsTemplate = Get-Content $appSettingTempalteFile -Raw
         $appSettingsTemplate = EvaluateEmbeddedFunctions -YamlContent $appSettingsTemplate -InputObject $BootstrapValues
         $appSettingsTemplate = Set-YamlValues -valueTemplate $appSettingsTemplate -settings $BootstrapValues
-        $appSettings = $appSettingsTemplate | ConvertFrom-Yaml2
+        $appSettings = $appSettingsTemplate | ConvertFrom-Yaml
 
         $serviceAppSettingTemplateFile = Join-Path (Split-Path $ServiceTemplateFile -Parent) "appsettings.$($ServiceSetting.service.name).yaml"
         if (Test-Path $serviceAppSettingTemplateFile) {
             $serviceAppSettingsTemplate = Get-Content $serviceAppSettingTemplateFile -Raw
             $serviceAppSettingsTemplate = EvaluateEmbeddedFunctions -YamlContent $serviceAppSettingsTemplate -InputObject $BootstrapValues
             $serviceAppSettingsTemplate = Set-YamlValues -valueTemplate $serviceAppSettingsTemplate -settings $BootstrapValues
-            $serviceAppSettings = $serviceAppSettingsTemplate | ConvertFrom-Yaml2
+            $serviceAppSettings = $serviceAppSettingsTemplate | ConvertFrom-Yaml
             Copy-YamlObject -fromObj $serviceAppSettings -toObj $appSettings
         }
 
         $spaceSettings = Get-Content $spaceAppSettingFile -Raw | ConvertFrom-Json
-        $spaceSettings = $spaceSettings | ConvertTo-Yaml2 | ConvertFrom-Yaml2 -Ordered # force to hashtable
+        $spaceSettings = $spaceSettings | ConvertTo-Yaml | ConvertFrom-Yaml -Ordered # force to hashtable
         Copy-YamlObject -fromObj $appSettings -toObj $spaceSettings
 
         ConvertYamlToJson -InputObject $spaceSettings | Out-File $spaceAppSettingFile -Encoding utf8 -Force | Out-Null

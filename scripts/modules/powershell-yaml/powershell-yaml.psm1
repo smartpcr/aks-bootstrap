@@ -53,14 +53,14 @@ function Convert-ValueToProperType {
         if (!($Node.Value -is [string])) {
             return $Node
         }
-        
+
         if ($Node.Style -eq 'Plain')
         {
             $types = @([int], [long], [double], [boolean], [decimal])
             foreach($i in $types){
                 $parsedValue = New-Object -TypeName $i.FullName
                 if ($i.IsAssignableFrom([boolean])){
-                    $result = $i::TryParse($Node,[ref]$parsedValue) 
+                    $result = $i::TryParse($Node,[ref]$parsedValue)
                 } else {
                     $result = $i::TryParse($Node, [Globalization.NumberStyles]::Any, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsedValue)
                 }
@@ -132,7 +132,7 @@ function Convert-YamlDocumentToPSObject {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-        [System.Object]$Node, 
+        [System.Object]$Node,
         [switch]$Ordered
     )
     PROCESS {
@@ -217,7 +217,7 @@ function Convert-PSObjectToGenericObject {
     return $data
 }
 
-function ConvertFrom-Yaml2 {
+function ConvertFrom-Yaml {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$false, ValueFromPipeline=$true, Position=0)]
@@ -226,7 +226,7 @@ function ConvertFrom-Yaml2 {
         [switch]$Ordered,
         [switch]$UseMergingParser=$false
     )
-    
+
     PROCESS {
         if(!$Yaml){
             return
@@ -311,9 +311,9 @@ function Get-Serializer {
     Param(
         [Parameter(Mandatory=$true)][YamlDotNet.Serialization.SerializationOptions]$Options
     )
-    
+
     $builder = New-Object "YamlDotNet.Serialization.SerializerBuilder"
-    
+
     if ($Options.HasFlag([YamlDotNet.Serialization.SerializationOptions]::Roundtrip)) {
         $builder = $builder.EnsureRoundtrip()
     }
@@ -333,7 +333,7 @@ function Get-Serializer {
     return $builder.Build()
 }
 
-function ConvertTo-Yaml2 {
+function ConvertTo-Yaml {
     [CmdletBinding(DefaultParameterSetName = 'NoOptions')]
     Param(
         [Parameter(ValueFromPipeline = $true, Position=0)]
@@ -377,7 +377,7 @@ function ConvertTo-Yaml2 {
         } else {
             $wrt = New-Object "System.IO.StringWriter"
         }
-    
+
         if ($PSCmdlet.ParameterSetName -eq 'NoOptions') {
             $Options = 0
             if ($JsonCompatible) {
@@ -404,7 +404,7 @@ function ConvertTo-Yaml2 {
     }
 }
 
-New-Alias -Name cfy -Value ConvertFrom-Yaml2
-New-Alias -Name cty -Value ConvertTo-Yaml2
+New-Alias -Name cfy -Value ConvertFrom-Yaml
+New-Alias -Name cty -Value ConvertTo-Yaml
 
 Export-ModuleMember -Function * -Alias *

@@ -43,7 +43,7 @@ LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Ou
 
 
 LogStep -Step 2 -Message "Get service setting..."
-$serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml2 -Ordered
+$serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
 $serviceType = "api"
 $serviceTemplates.services | ForEach-Object {
     if ($_.name -eq $ServiceName) {

@@ -44,11 +44,11 @@ Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
 $localSettingFile = Join-Path $envRootFolder "local.yaml"
-$settings = Get-Content $localSettingFile -Raw | ConvertFrom-Yaml2 -Ordered
+$settings = Get-Content $localSettingFile -Raw | ConvertFrom-Yaml -Ordered
 if ($SpaceName) {
     $spaceSettingFile = Join-Path $envRootFolder "local.$SpaceName.yaml"
     if (Test-Path $spaceSettingFile) {
-        $spaceOverrideValues = Get-Content $spaceSettingFile -Raw | ConvertFrom-Yaml2 -Ordered
+        $spaceOverrideValues = Get-Content $spaceSettingFile -Raw | ConvertFrom-Yaml -Ordered
         Copy-YamlObject -fromObj $spaceOverrideValues -toObj $settings
     }
 }

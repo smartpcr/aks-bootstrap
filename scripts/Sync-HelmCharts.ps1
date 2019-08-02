@@ -65,7 +65,7 @@ function PushHelmChartToAcr() {
     if (-not (Test-Path $helmConfigFile)) {
         helm init
     }
-    $helmRepos = Get-Content -Path $helmConfigFile -Raw | ConvertFrom-Yaml2 -Ordered
+    $helmRepos = Get-Content -Path $helmConfigFile -Raw | ConvertFrom-Yaml -Ordered
     $repoFound = $helmRepos.repositories | Where-Object { $_.name -eq $FromRepoName }
     if ($null -eq $repoFound) {
         helm repo add $FromRepoName $FromRepoUrl
