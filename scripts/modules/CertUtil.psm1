@@ -261,48 +261,52 @@ function NewWildCardSslCertUsingAcme() {
         [string]$YamlsFolder
     )
 
-    # TODO: run this in docker
-    $acmesh = "~/.acme.sh/acme.sh"
+    LogInfo "Check if ssl cert is already created and available in key vault"
+    [array]$sslCertsFound = az keyvault secret list --vault-name $VaultName --query "[?id=='https://$($VaultName).vault.azure.net/secrets/$($SslCertSecretName)']" | ConvertFrom-Json
+    if ($null -eq $sslCertsFound -or $sslCertsFound.Count -eq 0) {
+        # TODO: run this in docker
+        $acmesh = "~/.acme.sh/acme.sh"
 
-    $certOutputFolder = "~/.acme.sh/$($Domain)"
-    $shellContent = New-Object System.Text.StringBuilder
+        $certOutputFolder = "~/.acme.sh/$($Domain)"
+        $shellContent = New-Object System.Text.StringBuilder
 
-    $shellContent.AppendLine("export AZUREDNS_SUBSCRIPTIONID=`"$($SubscriptionId)`"") | Out-Null
-    $shellContent.AppendLine("export AZUREDNS_TENANTID=`"$($TenantId)`"") | Out-Null
-    $shellContent.AppendLine("export AZUREDNS_APPID=`"$($ClientId)`"") | Out-Null
-    $shellContent.AppendLine("export AZUREDNS_CLIENTSECRET=`"$($ClientSecret)`"") | Out-Null
-    $shellContent.AppendLine("export DOMAIN=`"$($Domain)`"") | Out-Null
-    $shellContent.AppendLine("$($acmesh) --issue --dns dns_azure -d $DOMAIN --debug") | Out-Null
-    $shFile = Join-Path $YamlsFolder "acme-wildcard.sh"
-    $shellContent.ToString() | Out-File $shFile -Encoding ascii -Force | Out-Null
-    Invoke-Expression "chmod +x $shFile"
-    Invoke-Expression "bash $shFile"
+        $shellContent.AppendLine("export AZUREDNS_SUBSCRIPTIONID=`"$($SubscriptionId)`"") | Out-Null
+        $shellContent.AppendLine("export AZUREDNS_TENANTID=`"$($TenantId)`"") | Out-Null
+        $shellContent.AppendLine("export AZUREDNS_APPID=`"$($ClientId)`"") | Out-Null
+        $shellContent.AppendLine("export AZUREDNS_CLIENTSECRET=`"$($ClientSecret)`"") | Out-Null
+        $shellContent.AppendLine("export DOMAIN=`"$($Domain)`"") | Out-Null
+        $shellContent.AppendLine("$($acmesh) --issue --dns dns_azure -d $DOMAIN --debug") | Out-Null
+        $shFile = Join-Path $YamlsFolder "acme-wildcard.sh"
+        $shellContent.ToString() | Out-File $shFile -Encoding ascii -Force | Out-Null
+        Invoke-Expression "chmod +x $shFile"
+        Invoke-Expression "bash $shFile"
 
-    $crtFile = Join-Path $certOutputFolder "$($Domain).cer"
-    $keyFile = Join-Path $certOutputFolder "$($Domain).key"
-    $caFile = Join-Path $certOutputFolder "ca.cer"
+        $crtFile = Join-Path $certOutputFolder "$($Domain).cer"
+        $keyFile = Join-Path $certOutputFolder "$($Domain).key"
+        $caFile = Join-Path $certOutputFolder "ca.cer"
 
-    $certContent = Get-Content -LiteralPath $crtFile -Raw
-    $keyContent = Get-Content -LiteralPath $keyFile -Raw
-    $caCertContent = Get-Content -LiteralPath $caFile -Raw
+        $certContent = Get-Content -LiteralPath $crtFile -Raw
+        $keyContent = Get-Content -LiteralPath $keyFile -Raw
+        $caCertContent = Get-Content -LiteralPath $caFile -Raw
 
-    $sslCertSecretYaml = @"
+        $sslCertSecretYaml = @"
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-    name: $($SslCertSecretName)
-    namespace: default
+name: $($SslCertSecretName)
+namespace: default
 data:
-    tls.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($certContent)))
-    tls.key: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($keyContent)))
-    ca.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($caCertContent)))
+tls.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($certContent)))
+tls.key: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($keyContent)))
+ca.crt: $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($caCertContent)))
 type: kubernetes.io/tls
 "@
 
-    $sslCertYamlFile = Join-Path $YamlsFolder "$($SslCertSecretName).secret"
-    $sslCertSecretYaml | Out-File $sslCertYamlFile -Encoding ascii
-    az keyvault secret set --vault-name $VaultName --name $SslCertSecretName --file $sslCertYamlFile | Out-Null
+        $sslCertYamlFile = Join-Path $YamlsFolder "$($SslCertSecretName).secret"
+        $sslCertSecretYaml | Out-File $sslCertYamlFile -Encoding ascii
+        az keyvault secret set --vault-name $VaultName --name $SslCertSecretName --file $sslCertYamlFile | Out-Null
+    }
 
     $sslCertYamlSecret = az keyvault secret show --vault-name $VaultName --name $SslCertSecretName | ConvertFrom-Json
     $sslCertYaml = $sslCertYamlSecret.value
