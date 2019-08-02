@@ -32,7 +32,7 @@ Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-LetsEncrypt"
 LogTitle -Message "Setting up Lets-Encrypt for environment '$EnvName/$SpaceName'..."
 
 

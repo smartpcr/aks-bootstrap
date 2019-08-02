@@ -21,7 +21,7 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Ssh-AksNode"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -SpaceName $SpaceName -EnvRootFolder $envFolder
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 az aks get-credentials --resource-group $bootstrapValues.aks.resourceGroup --name $bootstrapValues.aks.clusterName | Out-Null

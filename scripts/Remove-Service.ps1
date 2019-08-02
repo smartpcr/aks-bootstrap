@@ -34,7 +34,7 @@ Import-Module (Join-Path $moduleFolder "AksUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "ServiceUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Remove-Service"
 
 LogTitle -Message "Building and deploy service '$ServiceName' to '$EnvName/$SpaceName'..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName

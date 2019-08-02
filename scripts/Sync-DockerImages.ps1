@@ -27,7 +27,7 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-DockerImages"
 
 LogStep -Step 1 -Message "Get credential for '$($SourceSubscription)/$($SourceAcrName)'..."
 LoginAzureAsUser -SubscriptionName $SourceSubscription | Out-Null

@@ -20,7 +20,7 @@ Import-Module (Join-Path $moduleFolder "Common2.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup"
 LogTitle "Retrieving terraform settings for environment $EnvName/$SpaceName..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 $azureAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName

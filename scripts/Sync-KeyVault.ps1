@@ -83,7 +83,7 @@ if (-not (Test-Path $yamlsFolder)) {
 }
 Import-Module (Join-Path $moduleFolder "Common2.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-KeyVault"
 LoginAzureAsUser -SubscriptionName $SrcSubscriptionName | Out-Null
 
 

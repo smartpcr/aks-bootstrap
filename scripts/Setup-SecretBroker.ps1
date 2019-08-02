@@ -39,7 +39,7 @@ Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-SecretBroker"
 LogTitle -Message "Setting up secret broker for environment '$EnvName'..."
 
 

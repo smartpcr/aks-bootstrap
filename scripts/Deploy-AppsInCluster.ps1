@@ -39,7 +39,7 @@ Import-Module (Join-Path $moduleFolder "AksUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "ServiceUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Deploy-AppsInCluster"
 LogTitle -Message "Setting up [AAD Pod Identity] for environment '$EnvName/$SpaceName'..."
 
 LogStep -Step 1 -Message "Connecting to AKS cluster..."

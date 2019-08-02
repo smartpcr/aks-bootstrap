@@ -3,7 +3,7 @@ param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
     [ValidateSet("rrdp", "rrdu", "aamva", "xiaodoli", "xiaodong", "comp", "kojamroz", "taufiq")]
-    [string] $SpaceName = "xiaodoli",
+    [string] $SpaceName = "rrdp",
     [bool] $IsLocal = $false,
     [switch] $SyncKeyVault,
     [switch] $SyncAcr
@@ -28,7 +28,7 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-Infrastructure"
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
 LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
 

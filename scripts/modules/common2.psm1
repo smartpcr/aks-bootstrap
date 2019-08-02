@@ -1,10 +1,26 @@
 
 function SetupGlobalEnvironmentVariables() {
     param(
-        [string] $ScriptFolder
+        [Parameter(Mandatory = $true)]
+        [string] $ScriptFolder,
+        [Parameter(Mandatory = $true)]
+        [string] $ScriptName
     )
 
     $ErrorActionPreference = "Stop"
+    Set-StrictMode -Version Latest
+
+    try {
+        if ($null -eq $Global:ScriptName) {
+            $Global:ScriptName = if ($MyInvocation.MyCommand.Name) { $MyInvocation.MyCommand.Name } else { $ScriptName }
+            InitializeLogger
+        }
+    }
+    catch {
+        $Global:ScriptName = if ($MyInvocation.MyCommand.Name) { $MyInvocation.MyCommand.Name } else { $ScriptName }
+        InitializeLogger
+    }
+
     $scriptFolderName = Split-Path $ScriptFolder -Leaf
     if ($null -eq $scriptFolderName -or $scriptFolderName -ne "scripts") {
         throw "Invalid script folder: '$ScriptFolder'"

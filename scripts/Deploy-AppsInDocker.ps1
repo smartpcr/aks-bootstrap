@@ -53,7 +53,7 @@ Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "CertUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Deploy-AppsInDocker"
 $localSettingFile = Join-Path $envRootFolder "local.yaml"
 $settings = Get-Content $localSettingFile -Raw | ConvertFrom-Yaml -Ordered
 if ($SpaceName) {

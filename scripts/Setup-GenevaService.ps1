@@ -32,7 +32,7 @@ Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "AksUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlTemplates.psm1") -Force
-SetupGlobalEnvironmentVariables -ScriptFolder $scriptFolder
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-GenevaService"
 LogTitle -Message "Setting up AKS cluster for environment '$EnvName'..."
 
 
