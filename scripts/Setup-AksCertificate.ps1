@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "taufiq"
+    [string] $SpaceName = "rrdp"
 )
 
 $ErrorActionPreference = "Stop"
