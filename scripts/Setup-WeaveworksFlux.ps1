@@ -68,8 +68,20 @@ Read-Host "Hit enter after add deploy key to github manually"
 
 LogStep -Message "Add flux"
 helm repo add fluxcd https://fluxcd.github.io/flux
-helm repo update 
+helm repo update
+kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/master/deploy-helm/flux-helm-release-crd.yaml
+helm upgrade -i flux `
+    --set helmOperator.create=true `
+    --set helmOperator.createCRD=false `
+    --set git.url=git@github.com:smartpcr/flux-get-started `
+    --namespace flux `
+    fluxcd/flux
 
+$fluxIdentityKey = fluxctl identity --k8s-fwd-ns flux
+az keyvault secret set --vault-name $bootstrapValues.kv.name --name "flux-get-started-deploy-key" --value $fluxIdentityKey
+Write-Host "Put deployment key into git repo: 'https://github.com/smartpcr/flux-get-started/settings/keys'"
+Write-Host $fluxIdentityKey
+Read-Host "Hit enter when done"
 
 
 LogStep -Message "Apply terraform variables binding..."

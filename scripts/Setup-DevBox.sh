@@ -132,7 +132,7 @@ echo "Install fluxctl"
 if [ -f "/usr/binfluxctl" ]; then
     echo "fluxctl already installed"
 else
-    sudo snap install fluxctl
+    sudo brew install fluxctl
 fi
 
 
@@ -178,4 +178,4 @@ if [ -f "/usr/local/bin/pulumi" ]; then
     echo "pulumi already installed"
 else
     brew install pulumi
-fi 
+fi

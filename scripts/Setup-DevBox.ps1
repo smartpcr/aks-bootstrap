@@ -94,6 +94,9 @@ choco install kubernetes-helm -y
 Write-Host "Install terraform..."
 choco install terraform -y
 
+Write-Host "Installing fluxctl..."
+choco install fluxctl -y 
+
 # install openssl
 Write-Host "Installing openssl..."
 choco install openssl.light -y
@@ -128,7 +131,7 @@ InstallPulumi
 
 
 Write-Host "Installing kustomize..." -ForegroundColor Green
-choco install kustomize -y 
+choco install kustomize -y
 
 # trust the gallery so that I can import yamlUtil without prompt
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
