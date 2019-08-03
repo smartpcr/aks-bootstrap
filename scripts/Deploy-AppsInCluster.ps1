@@ -47,21 +47,21 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Deploy-AppsInCluster"
 UsingScope("Connecting to AKS cluster") {
     $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
     $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
-    LogInfo -Message "Build/deploy services using $($azAccount.user.name) [$($azAccount.user.type)]"
+    LogStep -Message "Build/deploy services using $($azAccount.user.name) [$($azAccount.user.type)]"
     & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 }
 
 
 UsingScope("Login to acr") {
     $acr = az acr show -g $bootstrapValues.acr.resourceGroup -n $bootstrapValues.acr.name | ConvertFrom-Json
-    LogInfo "login acr '$($acr.loginServer)'"
+    LogStep "login acr '$($acr.loginServer)'"
     az acr login -n $bootstrapValues.acr.name
 }
 
 UsingScope("Create K8S secret for docker registry") {
     $existingAcrAuthSecret = kubectl get secret acr-auth -o json | ConvertFrom-Json
     if ($null -ne $existingAcrAuthSecret) {
-        LogInfo "ACR secret 'acr-auth' is already created"
+        LogStep "ACR secret 'acr-auth' is already created"
     }
     else {
         $acrPassword = "$(az acr credential show -n $($bootstrapValues.acr.name) --query ""passwords[0].value"")"
@@ -77,99 +77,108 @@ UsingScope("Create K8S secret for docker registry") {
 }
 
 
-UsingScope("Build and deploy all services defined in manifest file '$ServiceTemplateFile'") {
+LogStep -Message "Cleaning existing docker images on local disk..."
+ClearLocalDockerImages
 
-    LogInfo -Message "Cleaning existing docker images on local disk..."
-    ClearLocalDockerImages
 
-    $serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
-    LogInfo -Message "Collecting ssl certs and ingress rules for all the services..."
+$serviceTemplates = Get-Content $ServiceTemplateFile -Raw | ConvertFrom-Yaml -Ordered
+LogStep -Message "Build and deploy all $($serviceTemplates.services.Count) services defined in manifest file '$ServiceTemplateFile'"
+
+if ($UsePodIdentity) {
     $serviceTemplates.services | ForEach-Object {
         $serviceName = $_.name
-        if ((-not ($ServicesToDeploy -contains "all") -and (-not ($ServicesToDeploy -contains $serviceName)))) {
-            LogInfo -Message "Skipping deploying service '$serviceName'"
-        }
-        else {
-            LogInfo -Message "Getting service setting '$serviceName'..."
-            $svcOutputFolder = Join-Path $yamlsFolder $serviceName
-            if (-not (Test-Path $svcOutputFolder)) {
-                New-Item $svcOutputFolder -ItemType Directory -Force | Out-Null
-            }
+        LogStep -Message "Ensure pod identity for service '$serviceName'"
+        $serviceIdentity = EnsureServiceIentity -serviceName $ServiceName -bootstrapValues $bootstrapValues
+        LogInfo "MSI for service '$serviceName' is created with client id '$($serviceIdentity.clientId)'"
+    }
+}
 
-            $serviceSetting = GetServiceSetting `
+
+$serviceTemplates.services | ForEach-Object {
+    $serviceName = $_.name
+    if ((-not ($ServicesToDeploy -contains "all") -and (-not ($ServicesToDeploy -contains $serviceName)))) {
+        LogStep -Message "Skipping deploying service '$serviceName'"
+    }
+    else {
+        LogStep -Message "Getting service setting '$serviceName'..."
+        $svcOutputFolder = Join-Path $yamlsFolder $serviceName
+        if (-not (Test-Path $svcOutputFolder)) {
+            New-Item $svcOutputFolder -ItemType Directory -Force | Out-Null
+        }
+
+        $serviceSetting = GetServiceSetting `
+            -EnvName $EnvName `
+            -SpaceName $SpaceName `
+            -AzAccount $azAccount `
+            -ServiceName $serviceName `
+            -templateFolder $templateFolder `
+            -scriptFolder $scriptFolder `
+            -bootstrapValues $bootstrapValues `
+            -UsePodIdentity $UsePodIdentity `
+            -BuildNumber $BuildNumber `
+            -ServiceTemplateFile $ServiceTemplateFile `
+            -IsLocal $IsLocal
+
+        UsingScope("Building service '$serviceName'") {
+            & $scriptFolder\BuildService.ps1 `
                 -EnvName $EnvName `
                 -SpaceName $SpaceName `
-                -AzAccount $azAccount `
+                -ServiceTemplateFile $ServiceTemplateFile `
                 -ServiceName $serviceName `
-                -templateFolder $templateFolder `
-                -scriptFolder $scriptFolder `
-                -bootstrapValues $bootstrapValues `
                 -UsePodIdentity $UsePodIdentity `
                 -BuildNumber $BuildNumber `
-                -ServiceTemplateFile $ServiceTemplateFile `
                 -IsLocal $IsLocal
+        }
 
-            UsingScope("Building service '$serviceName'") {
-                & $scriptFolder\BuildService.ps1 `
-                    -EnvName $EnvName `
-                    -SpaceName $SpaceName `
-                    -ServiceTemplateFile $ServiceTemplateFile `
-                    -ServiceName $serviceName `
+
+        LogStep -Message "Check image '$($acr.loginServer)/$($serviceSetting.service.image.name)' exists in ACR '$($bootstrapValues.acr.name)'"
+        $imagePublished = CheckImageExistance `
+            -bootstrapValues $bootstrapValues `
+            -ImageName "$($acr.loginServer)/$($serviceSetting.service.image.name)" `
+            -ImageTag $BuildNumber
+        if ($false -eq $imagePublished) {
+            throw "Docker image is not found in acr"
+        }
+
+        if (!$IsLocal) {
+            UsingScope("Deploying service '$serviceName' to aks") {
+                DeployServiceToAks `
+                    -serviceSetting $serviceSetting `
+                    -TemplateFolder $templateFolder `
+                    -ScriptFolder $scriptFolder `
                     -UsePodIdentity $UsePodIdentity `
-                    -BuildNumber $BuildNumber `
-                    -IsLocal $IsLocal
+                    -bootstrapValues $bootstrapValues `
+                    -BuildNumber $BuildNumber
             }
 
+            LogStep -Message "Update service reply urls..."
+            # UpdateServiceAuthRedirectUrl -ServiceSetting $serviceSetting -BootstrapValues $bootstrapValues
 
-            LogInfo -Message "Check image '$($acr.loginServer)/$($serviceSetting.service.image.name)' exists in ACR '$($bootstrapValues.acr.name)'"
-            $imagePublished = CheckImageExistance `
-                -bootstrapValues $bootstrapValues `
-                -ImageName "$($acr.loginServer)/$($serviceSetting.service.image.name)" `
-                -ImageTag $BuildNumber
-            if ($false -eq $imagePublished) {
-                throw "Docker image is not found in acr"
-            }
+            # if ($bootstrapValues.dns.sslCertSelfSigned -and $serviceSetting.service.type -ne "job") {
+            #     # https://github.com/fbeltrao/aks-letsencrypt/blob/master/setup-wildcard-certificates-with-azure-dns.md
+            #     LogStep -Message "Setup ssl certificate '$($bootstrapValues.dns.sslCert)' with cert-manager and lets-encrypt..."
+            #     $serviceTlsCertYamlTemplateFile = Join-Path $templateFolder "k8s-sslcert-letsencrypt.yaml"
+            #     $serviceTlsCertYamlTemplate = Get-Content $serviceTlsCertYamlTemplateFile -Raw
+            #     $serviceTlsCertYamlTemplate = Set-YamlValues -ValueTemplate $serviceTlsCertYamlTemplate -Settings $bootstrapValues
+            #     $serviceTlsCertYamlTemplate = Set-YamlValues -ValueTemplate $serviceTlsCertYamlTemplate -Settings $serviceSetting
+            #     $serviceTlsCertYamlFile = Join-Path $svcOutputFolder "tls-cert.yaml"
+            #     $serviceTlsCertYamlTemplate | Out-File $serviceTlsCertYamlFile -Encoding utf8 -Force | Out-Null
+            #     kubectl apply -f $serviceTlsCertYamlFile
 
-            if (!$IsLocal) {
-                UsingScope("Deploying service '$serviceName' to aks") {
-                    DeployServiceToAks `
-                        -serviceSetting $serviceSetting `
-                        -TemplateFolder $templateFolder `
-                        -ScriptFolder $scriptFolder `
-                        -UsePodIdentity $UsePodIdentity `
-                        -bootstrapValues $bootstrapValues `
-                        -BuildNumber $BuildNumber
-                }
-
-                LogInfo -Message "Update service reply urls..."
-                # UpdateServiceAuthRedirectUrl -ServiceSetting $serviceSetting -BootstrapValues $bootstrapValues
-
-                # if ($bootstrapValues.dns.sslCertSelfSigned -and $serviceSetting.service.type -ne "job") {
-                #     # https://github.com/fbeltrao/aks-letsencrypt/blob/master/setup-wildcard-certificates-with-azure-dns.md
-                #     LogInfo -Message "Setup ssl certificate '$($bootstrapValues.dns.sslCert)' with cert-manager and lets-encrypt..."
-                #     $serviceTlsCertYamlTemplateFile = Join-Path $templateFolder "k8s-sslcert-letsencrypt.yaml"
-                #     $serviceTlsCertYamlTemplate = Get-Content $serviceTlsCertYamlTemplateFile -Raw
-                #     $serviceTlsCertYamlTemplate = Set-YamlValues -ValueTemplate $serviceTlsCertYamlTemplate -Settings $bootstrapValues
-                #     $serviceTlsCertYamlTemplate = Set-YamlValues -ValueTemplate $serviceTlsCertYamlTemplate -Settings $serviceSetting
-                #     $serviceTlsCertYamlFile = Join-Path $svcOutputFolder "tls-cert.yaml"
-                #     $serviceTlsCertYamlTemplate | Out-File $serviceTlsCertYamlFile -Encoding utf8 -Force | Out-Null
-                #     kubectl apply -f $serviceTlsCertYamlFile
-
-                #     LogInfo -Message "Update ingress annotation to use letsencrypt..."
-                #     $serviceIngresTemplateFile = Join-Path $templateFolder "k8s-ingress-letsencrypt.yaml"
-                #     $serviceIngresTemplate = Get-Content $serviceIngresTemplateFile -Raw
-                #     $serviceIngresTemplate = Set-YamlValues -ValueTemplate $serviceIngresTemplate -Settings $bootstrapValues
-                #     $serviceIngresTemplate = Set-YamlValues -ValueTemplate $serviceIngresTemplate -Settings $ServiceSetting
-                #     $serviceIngressYamlFile = Join-Path $svcOutputFolder "ingress.yaml"
-                #     $serviceIngresTemplate | Out-File $serviceIngressYamlFile -Encoding utf8 -Force | Out-Null
-                #     kubectl apply -f $serviceIngressYamlFile
-                # }
-            }
-            else {
-                # TODO: move this block to file `Deploy-AppsInDocker.ps1`
-                UsingScope("Running service '$serviceName' in docker") {
-                    docker run -d "$($serviceSetting.acrName).azurecr.io/$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)"
-                }
+            #     LogStep -Message "Update ingress annotation to use letsencrypt..."
+            #     $serviceIngresTemplateFile = Join-Path $templateFolder "k8s-ingress-letsencrypt.yaml"
+            #     $serviceIngresTemplate = Get-Content $serviceIngresTemplateFile -Raw
+            #     $serviceIngresTemplate = Set-YamlValues -ValueTemplate $serviceIngresTemplate -Settings $bootstrapValues
+            #     $serviceIngresTemplate = Set-YamlValues -ValueTemplate $serviceIngresTemplate -Settings $ServiceSetting
+            #     $serviceIngressYamlFile = Join-Path $svcOutputFolder "ingress.yaml"
+            #     $serviceIngresTemplate | Out-File $serviceIngressYamlFile -Encoding utf8 -Force | Out-Null
+            #     kubectl apply -f $serviceIngressYamlFile
+            # }
+        }
+        else {
+            # TODO: move this block to file `Deploy-AppsInDocker.ps1`
+            UsingScope("Running service '$serviceName' in docker") {
+                docker run -d "$($serviceSetting.acrName).azurecr.io/$($serviceSetting.service.image.name):$($serviceSetting.service.image.tag)"
             }
         }
     }
