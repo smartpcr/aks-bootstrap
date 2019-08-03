@@ -5,7 +5,7 @@ function SetConfigMap {
         [string] $Value,
         [string] $Namespace,
         [string] $ScriptFolder,
-        [string] $EnvRootFolder 
+        [string] $EnvRootFolder
     )
 
     $templateFolder = Join-Path $EnvRootFolder "templates"
@@ -24,12 +24,12 @@ function SetConfigMap {
 
 function SetSecret {
     param(
-        [string] $Key,
-        [string] $Name,
+        [string] $Name, # secret name
+        [string] $Key, # key = value
         [string] $Value,
-        [string] $Namespace,
+        [string] $Namespace = "default",
         [string] $ScriptFolder,
-        [string] $EnvRootFolder 
+        [string] $EnvRootFolder
     )
 
     $templateFolder = Join-Path $EnvRootFolder "templates"

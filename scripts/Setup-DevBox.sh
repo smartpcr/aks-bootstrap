@@ -85,6 +85,9 @@ fi
 echo "installing helm..."
 if [ -f "/usr/local/bin/helm" ]; then
     echo "helm already installed"
+    # note: DO NOT use vscode extension `vscode-helm`
+    # it introduces an env variable: TILLER_NAMESPACE,
+    # that's been causing problem after switched to different cluster
 else
     curl -LO https://get.helm.sh/helm-v2.14.3-linux-amd64.tar.gz
     tar -zxvf helm-v2.14.3-linux-amd64.tar.gz
