@@ -71,9 +71,10 @@ function LogTitle() {
         [string] $Message
     )
 
-    Write-Host "`n"
-    Write-Host "`t`t***** $Message *****" -ForegroundColor Green
-    Write-Host "`n"
+    $formatedMessage = "`n`t`t***** $Message *****`n"
+    Write-Host $formatedMessage
+    Write-Host "Writing log to $($Global:LogFile)...($(Get-Date))"
+    Add-Content -Path $Global:LogFile -Value $formatedMessage
 }
 
 function Get-OrCreatePasswordInVault2 {

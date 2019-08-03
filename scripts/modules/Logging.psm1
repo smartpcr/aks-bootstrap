@@ -24,8 +24,7 @@ function InitializeLogger() {
     }
 
     if ($ShouldCreateLogger) {
-        $Global:ScriptName = if ($ScriptName) { $ScriptName } else { $MyInvocation.MyCommand.Name } 
-        LogTitle -Message $Global:ScriptName
+        $Global:ScriptName = if ($ScriptName) { $ScriptName } else { $MyInvocation.MyCommand.Name }
 
         [System.Collections.ArrayList]($Global:Steps) = New-Object System.Collections.ArrayList
         ($Global:Steps).Add(@{
@@ -47,6 +46,8 @@ function InitializeLogger() {
         $timeString = (Get-Date).ToString("yyyy-MM-dd-HHmmss")
         $logFile = Join-Path $logFolder "$($timeString).log"
         $Global:LogFile = $logFile
+
+        LogTitle -Message $Global:ScriptName
     }
 }
 
