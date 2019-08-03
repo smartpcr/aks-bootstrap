@@ -92,6 +92,7 @@ function BuildDockerFile() {
             $patFilePath = Join-Path $nugetFolder $ServiceSetting.privateNugetFeed.passwordFromEnvironment
             if (Test-Path $patFilePath) {
                 $pat = [System.IO.File]::ReadAllText($patFilePath)
+                $pat = $pat.Trim()  # trim newline added by some of the editor
             }
             else {
                 $pat = Read-Host "Enter pat for nuget feed: '$($ServiceSetting.privateNugetFeed.name)'"

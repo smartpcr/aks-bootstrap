@@ -4,7 +4,7 @@ param(
     [string] $EnvName = "dev",
     [string] $SpaceName = "xiaodong",
     [bool] $IsLocal = $false,
-    [string] $ServiceTemplateFile = "c:\work\my\userspace\deploy\examples\1es\services.yaml"
+    [string] $ServiceTemplateFile = "~/work/github/aks-bootstrap/deploy/examples/1es/services.yaml"
 )
 
 $ErrorActionPreference = "Stop"

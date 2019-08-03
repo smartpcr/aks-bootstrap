@@ -1,4 +1,4 @@
-sourceCodeRepoRoot: "c:/appcenter/1es"
+sourceCodeRepoRoot: "~/work/appcenter/1es"
 baseAppSettingsFile: "appsettings.json"
 acr:
   name: "{{.Values.acr.name}}"

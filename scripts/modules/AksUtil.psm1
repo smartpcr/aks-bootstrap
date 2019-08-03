@@ -49,12 +49,22 @@ function EnsureServiceIentity() {
 
     $serviceIdentity = $null
     $mcResourceGroupName = GetAksResourceGroupName -bootstrapValues $bootstrapValues
-    $msiArray = az identity list --resource-group $mcResourceGroupName --query "[?name=='$serviceName']" | ConvertFrom-Json
-    if (!$msiArray -or ([array]$msiArray).Count -eq 0) {
+    [array]$msiArray = az identity list --resource-group $mcResourceGroupName --query "[?name=='$serviceName']" | ConvertFrom-Json
+    if (!$msiArray -or $msiArray.Count -eq 0) {
         LogInfo -Message "Creating MSI '$serviceName'..."
         $serviceIdentity = az identity create -g $mcResourceGroupName -n $serviceName | ConvertFrom-Json
-        LogInfo -Message "Waiting for msi '$serviceName' to become available..."
-        Start-Sleep -Seconds 10
+
+        $totalRetryCount = 0
+        while (($null -eq $msiArray -or $msiArray.Count -eq 0) -and $totalRetryCount -lt 10) {
+            LogInfo -Message "Waiting for msi '$serviceName' to become available..."
+            Start-Sleep -Seconds 10
+            [array]$msiArray = az identity list --resource-group $mcResourceGroupName --query "[?name=='$serviceName']" | ConvertFrom-Json
+            $totalRetryCount++
+        }
+        if ($null -eq $msiArray -or $msiArray.Count -eq 0) {
+            throw "Unable to create user assigned identity after $totalRetryCount retries"
+        }
+
         $serviceIdentity = az identity show --resource-group $mcResourceGroupName --name $serviceName | ConvertFrom-Json
     }
     else {
