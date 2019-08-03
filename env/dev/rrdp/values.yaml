@@ -40,7 +40,7 @@ cosmosDb:
    resourceGroup: "azds-rg"
 dns:
   resourceGroup: "azds-rg"
-  domain: "dev.xiaodong.cloud"
+  domain: "xiaodong.cloud"
   sslCert: sslcert-dev-xiaodong-cloud
 trafficManager:
   resourceGroup: "azds-rg"

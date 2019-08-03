@@ -23,7 +23,7 @@ function EnsureCosmosDbAccount() {
     $dbAcct = az cosmosdb list --query "[?name=='$AccountName']" | ConvertFrom-Json
     if (!$dbAcct) {
         if ($API -eq "Gremlin") {
-            Write-Host "`tCreating cosmosDB account $AccountName with gremlin api..." -ForegroundColor White
+            LogInfo "`tCreating cosmosDB account $AccountName with gremlin api..." -ForegroundColor White
             az cosmosdb create `
                 --resource-group $ResourceGroupName `
                 --name $AccountName `
@@ -32,24 +32,24 @@ function EnsureCosmosDbAccount() {
                 --default-consistency-level $ConsistencyLevel
         }
         elseif ($API -eq "Mongo") {
-            Write-Host "`tCreating cosmosDB account $AccountName with mongodb api..." -ForegroundColor White
+            LogInfo "`tCreating cosmosDB account $AccountName with mongodb api..." -ForegroundColor White
             az cosmosdb create --name $AccountName --resource-group $ResourceGroupName --default-consistency-level ConsistentPrefix --kind MongoDB --locations "$Location=0" | Out-Null
         }
         elseif ($API -eq "Cassandra") {
-            Write-Host "`tCreating cosmosDB account $AccountName with cassandra api..." -ForegroundColor White
+            LogInfo "`tCreating cosmosDB account $AccountName with cassandra api..." -ForegroundColor White
             az cosmosdb create --name $AccountName --resource-group $ResourceGroupName --kind MongoDB --locations $Location=0 --capabilities EnableCassandra | Out-Null
         }
         elseif ($API -eq "Table") {
-            Write-Host "`tCreating cosmosDB account $AccountName with table api..." -ForegroundColor White
+            LogInfo "`tCreating cosmosDB account $AccountName with table api..." -ForegroundColor White
             az cosmosdb create --name $AccountName --resource-group $ResourceGroupName --kind MongoDB --locations $Location=0 --capabilities EnableTable | Out-Null
         }
         else {
-            Write-Host "`tCreating cosmosDB account $AccountName with sql api..." -ForegroundColor White
+            LogInfo "`tCreating cosmosDB account $AccountName with sql api..." -ForegroundColor White
             az cosmosdb create --name $AccountName --resource-group $ResourceGroupName --default-consistency-level Session --kind GlobalDocumentDB --locations "$Location=0" | Out-Null
         }
     }
     else {
-        Write-Host "`tCosmosDB account $AccountName is already created." -ForegroundColor Yellow
+        LogInfo "`tCosmosDB account $AccountName is already created." -ForegroundColor Yellow
     }
 }
 
@@ -88,7 +88,7 @@ function EnsureCollectionExists() {
 
     if (!$collectionExists) {
         if ($null -ne $PartitionKeyPath -and $PartitionKeyPath -ne "") {
-            Write-Host "Creating collection '$CollectionName'...throughput=$Throughput, partition=$PartitionKeyPath" -ForegroundColor White
+            LogInfo "Creating collection '$CollectionName'...throughput=$Throughput, partition=$PartitionKeyPath" -ForegroundColor White
 
             az cosmosdb collection create `
                 --collection-name $CollectionName `
@@ -99,7 +99,7 @@ function EnsureCollectionExists() {
                 --partition-key-path $PartitionKeyPath | Out-Null
         }
         else {
-            Write-Host "Creating collection '$CollectionName' without partition...throughput=$Throughput" -ForegroundColor White
+            LogInfo "Creating collection '$CollectionName' without partition...throughput=$Throughput" -ForegroundColor White
 
             CreateCollection `
                 -Endpoint "https://$($AccountName).documents.azure.com:443" `
@@ -111,7 +111,7 @@ function EnsureCollectionExists() {
         }
     }
     else {
-        Write-Host "Collection '$CollectionName' is already created." -ForegroundColor White
+        LogInfo "Collection '$CollectionName' is already created." -ForegroundColor White
     }
 }
 

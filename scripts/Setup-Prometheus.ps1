@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodoli"
+    [string] $SpaceName = "rrdp"
 )
 
 $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
