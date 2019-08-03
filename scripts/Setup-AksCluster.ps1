@@ -292,10 +292,21 @@ LogInfo -Message "Map devspace to K8S namespace"
 kubectl create namespace $SpaceName
 
 LogInfo -Message "Enable http_application_routing on AKS cluster (required by istio) ..."
-az aks enable-addons `
-    --resource-group $bootstrapValues.aks.resourceGroup `
-    --name $bootstrapValues.aks.clusterName `
-    --addons http_application_routing | Out-Null
+$httpApplicationRoutingAlreadyEnabled = $false
+if ($null -ne $aksCluster.addonProfiles -and $null -ne $aksCluster.addonProfiles.httpApplicationRouting) {
+    if ($aksCluster.addonProfiles.httpApplicationRouting.enabled) {
+        $httpApplicationRoutingAlreadyEnabled = $true
+    }
+}
+if (!$httpApplicationRoutingAlreadyEnabled) {
+    az aks enable-addons `
+        --resource-group $bootstrapValues.aks.resourceGroup `
+        --name $bootstrapValues.aks.clusterName `
+        --addons http_application_routing | Out-Null
+}
+else {
+    LogInfo "http_application_routing is already enabled"
+}
 
 
 LogStep -Message "Setup k8s ingress..."
