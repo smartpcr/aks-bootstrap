@@ -36,7 +36,7 @@ Import-Module (Join-Path $moduleFolder "KubeUtil.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-WeaveworksFlux"
 LogStep -Message "Login and retrieve aks spn pwd..."
 $bootstrapValues = Get-EnvironmentSettings -EnvName $envName -EnvRootFolder $envRootFolder -SpaceName $SpaceName
-LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
+$AzAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
 & $scriptFolder\ConnectTo-AksCluster.ps1 -EnvName $EnvName -SpaceName $SpaceName -AsAdmin
 
 
@@ -110,6 +110,9 @@ LogStep -Message "Apply terraform variables binding..."
 AddAdditionalAksProperties -bootstrapValues $bootstrapValues
 PopulateTerraformProperties -bootstrapValues $bootstrapValues
 $bootstrapValues.flux["deployPrivateKeyFile"] = $sshKeyFile
+$bootstrapValues.global["subscriptionId"] = $AzAccount.id
+$bootstrapValues.global["tenantId"] = $AzAccount.tenantId
+
 $terraformFolder = Join-Path $envRootFolder "terraform"
 $azureSimpleFolder = Join-Path $terraformFolder "azure-simple"
 $tfVarFile = Join-Path $azureSimpleFolder "terraform.tfvars"

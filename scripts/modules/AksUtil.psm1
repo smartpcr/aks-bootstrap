@@ -22,8 +22,12 @@ function AddAdditionalAksProperties() {
     }
     $bootstrapValues.aks["clusterSpn"] = $aksClusterSpn
 
-    $aksPublicSshKey = az keyvault secret show --vault-name $bootstrapValues.kv.name --name $bootstrapValues.aks.ssh_pubblic_key | ConvertFrom-Json
-    # az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.aks.ssh_pubblic_key --value $aksPublicSshKey.value
+    $aksPublicSshKey = az keyvault secret show `
+        --vault-name $bootstrapValues.kv.name `
+        --name $bootstrapValues.aks.ssh_pubblic_key | ConvertFrom-Json
+    # existing ssh pub value is stored as "$($bootstrapValues.aks.ssh_private_key)-pub"
+    # i.e. certname-key-pub
+    az keyvault secret set --vault-name $bootstrapValues.kv.name --name $bootstrapValues.aks.ssh_pubblic_key --value $aksPublicSshKey.value
     $bootstrapValues.aks["nodePublicSshKey"] = ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($aksPublicSshKey.value))).Trim()
 }
 
