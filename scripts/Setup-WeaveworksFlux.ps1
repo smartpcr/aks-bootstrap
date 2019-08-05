@@ -2,7 +2,7 @@
 param(
     [ValidateSet("dev", "int", "prod")]
     [string] $EnvName = "dev",
-    [string] $SpaceName = "xiaodong"
+    [string] $SpaceName = "rrdp"
 )
 
 $ErrorActionPreference = "Stop"
@@ -67,6 +67,8 @@ else {
     az keyvault secret download --vault-name $bootstrapValues.kv.name --name $bootstrapValues.flux.deployPublicKey -e base64 -f $sshPubKeyFile
 }
 
+
+LogStep -Message "Set deployment key as k8s secret"
 $deployKeyKubeSecretFound = kubectl get secret -n flux | grep $bootstrapValues.flux.deployPrivateKey
 if ($null -eq $deployKeyKubeSecretFound) {
     kubectl create secret generic $bootstrapValues.flux.deployPrivateKey --from-file $sshKeyFile
@@ -84,7 +86,7 @@ else {
 
 $pubKeyContent = Get-Content $sshPubKeyFile
 LogInfo -Message "publick key: '$($bootstrapValues.flux.deployPublicKey)'`n$($pubKeyContent)"
-LogInfo -Message "navigate to https://github.com/smartpcr/flux/settings/keys and add public deploy key"
+LogInfo -Message "navigate to $($bootstrapValues.flux.repoUrl)/settings/keys and add public deploy key"
 Read-Host "Hit enter after add deploy key to github manually"
 
 
