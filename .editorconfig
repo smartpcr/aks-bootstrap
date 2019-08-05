@@ -9,5 +9,5 @@ insert_final_newline = false
 indent_style = space
 indent_size = 4
 
-[*.{yaml,tpl,json}]
+[*.{yaml,tpl,json,tf,tfvars}]
 indent_size = 2

@@ -1,7 +1,7 @@
-ARM_SUBSCRIPTION_ID={{.Values.global.subscriptionId}}
-ARM_TENANT_ID={{.Values.global.tenantId}}
-ARM_CLIENT_SECRET={{.Values.terraform.spn.appId}}
-ARM_CLIENT_ID={{.Values.terraform.spn.pwd}}
+ARM_SUBSCRIPTION_ID="{{.Values.global.subscriptionId}}"
+ARM_TENANT_ID="{{.Values.global.tenantId}}"
+ARM_CLIENT_SECRET="{{.Values.terraform.spn.appId}}"
+ARM_CLIENT_ID="{{.Values.terraform.spn.pwd}}"
 
 resource_group_name="{{.Values.aks.resourceGroup}}"
 resource_group_location="{{.Values.aks.location}}"
