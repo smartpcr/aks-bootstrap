@@ -32,3 +32,17 @@ cosmosDb:
    resourceGroup: "azds-dev-rg"
   mongoDb:
    resourceGroup: "azds-dev-rg"
+dns:
+  resourceGroup: "azds-rg"
+  domain: "xiaodong.cloud"
+  sslCert: sslcert-dev-xiaodong-cloud
+trafficManager:
+  resourceGroup: "azds-rg"
+redis:
+  resourceGroup: "azds-rg"
+flux:
+  gitRepo:
+    teamOrUser: smartpcr
+    name: myk8s
+    deployPrivateKey: flux-git-deploy-key
+    deployPublicKey: flux-git-deploy-pub
