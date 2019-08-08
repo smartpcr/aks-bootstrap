@@ -10,7 +10,7 @@ if (-not (Test-Path $scriptFolder)) {
 }
 
 # Import-Module "$scriptFolder\Modules\powershell-yaml\powershell-yaml.psm1" -Force
-Install-Module powershell-yaml
+Install-Module powershell-yaml -AllowClobber
 Import-Module powershell-yaml -Force
 
 function Get-EnvironmentSettings {

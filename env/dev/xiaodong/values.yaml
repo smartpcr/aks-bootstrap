@@ -60,3 +60,9 @@ trafficManager:
   resourceGroup: "azds-rg"
 redis:
   resourceGroup: "azds-rg"
+flux:
+  gitRepo:
+    teamOrUser: smartpcr
+    name: myk8s
+    deployPrivateKey: flux-git-deploy-key
+    deployPublicKey: flux-git-deploy-pub

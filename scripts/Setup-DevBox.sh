@@ -114,8 +114,7 @@ echo "Installing terraform"
 if [ -f "/usr/local/bin/terraform" ]; then
     echo "Terraform already installed"
 else
-
-    wget https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
+    curl -OL https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
     unzip terraform_0.11.14_linux_amd64.zip
     sudo chmod +x terraform
     sudo mv terraform /usr/local/bin/
